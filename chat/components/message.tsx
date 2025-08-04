@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolCall, DocumentToolResult } from './document';
-import { PencilEditIcon, SparklesIcon } from './icons';
+import { PencilEditIcon, SparklesIcon, AudioIcon } from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
@@ -50,6 +50,39 @@ const PurePreviewMessage = ({
 
   useDataStream();
 
+  const renderAttachment = (attachment: any) => {
+    const isAudio = attachment.mediaType?.startsWith('audio/');
+    const isImage = attachment.mediaType?.startsWith('image/');
+
+    if (isAudio) {
+      return (
+        <div className="flex flex-col gap-2 p-3 bg-muted rounded-lg">
+          <div className="flex items-center gap-2">
+            <AudioIcon size={16} />
+            <span className="text-sm font-medium">{attachment.filename || 'Audio File'}</span>
+          </div>
+          <audio 
+            controls 
+            className="w-full max-w-md"
+            src={attachment.url}
+          >
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+      );
+    }
+
+    return (
+      <PreviewAttachment
+        attachment={{
+          name: attachment.filename ?? 'file',
+          contentType: attachment.mediaType,
+          url: attachment.url,
+        }}
+      />
+    );
+  };
+
   return (
     <AnimatePresence>
       <motion.div
@@ -87,14 +120,9 @@ const PurePreviewMessage = ({
                 className="flex flex-row justify-end gap-2"
               >
                 {attachmentsFromMessage.map((attachment) => (
-                  <PreviewAttachment
-                    key={attachment.url}
-                    attachment={{
-                      name: attachment.filename ?? 'file',
-                      contentType: attachment.mediaType,
-                      url: attachment.url,
-                    }}
-                  />
+                  <div key={attachment.url}>
+                    {renderAttachment(attachment)}
+                  </div>
                 ))}
               </div>
             )}

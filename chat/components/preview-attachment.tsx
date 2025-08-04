@@ -1,5 +1,5 @@
 import type { Attachment } from '@/lib/types';
-import { LoaderIcon } from './icons';
+import { LoaderIcon, AudioIcon } from './icons';
 
 export const PreviewAttachment = ({
   attachment,
@@ -10,11 +10,14 @@ export const PreviewAttachment = ({
 }) => {
   const { name, url, contentType } = attachment;
 
+  const isAudio = contentType?.startsWith('audio/');
+  const isImage = contentType?.startsWith('image/');
+
   return (
     <div data-testid="input-attachment-preview" className="flex flex-col gap-2">
       <div className="w-20 h-16 aspect-video bg-muted rounded-md relative flex flex-col items-center justify-center">
         {contentType ? (
-          contentType.startsWith('image') ? (
+          isImage ? (
             // NOTE: it is recommended to use next/image for images
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -23,8 +26,15 @@ export const PreviewAttachment = ({
               alt={name ?? 'An image attachment'}
               className="rounded-md size-full object-cover"
             />
+          ) : isAudio ? (
+            <div className="flex flex-col items-center justify-center text-muted-foreground">
+              <AudioIcon size={24} />
+              <span className="text-xs mt-1">Audio</span>
+            </div>
           ) : (
-            <div className="" />
+            <div className="flex flex-col items-center justify-center text-muted-foreground">
+              <span className="text-xs">File</span>
+            </div>
           )
         ) : (
           <div className="" />

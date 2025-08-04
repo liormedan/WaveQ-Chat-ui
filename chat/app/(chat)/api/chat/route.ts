@@ -139,9 +139,9 @@ export async function POST(request: Request) {
           chatId: id,
           id: message.id,
           role: 'user',
-          parts: message.parts,
-          attachments: [],
-          createdAt: new Date(),
+          parts: JSON.stringify(message.parts),
+          attachments: JSON.stringify([]),
+          createdAt: Date.now(),
         },
       ],
     });
@@ -195,9 +195,9 @@ export async function POST(request: Request) {
           messages: messages.map((message) => ({
             id: message.id,
             role: message.role,
-            parts: message.parts,
-            createdAt: new Date(),
-            attachments: [],
+            parts: JSON.stringify(message.parts),
+            createdAt: Date.now(),
+            attachments: JSON.stringify([]),
             chatId: id,
           })),
         });

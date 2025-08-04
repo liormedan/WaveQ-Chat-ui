@@ -22,6 +22,8 @@ import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
 import type { Attachment, ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
+import { CodeTerminal, type CodeTerminalOutput } from './code-terminal';
+import { GeneratedCodeBlock } from './generated-code-block';
 
 export function Chat({
   id,
@@ -117,6 +119,7 @@ export function Chat({
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
+  const [codeOutputs, setCodeOutputs] = useState<CodeTerminalOutput[]>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   useAutoResume({
@@ -125,6 +128,48 @@ export function Chat({
     resumeStream,
     setMessages,
   });
+
+  // Add function to handle code generation from audio
+  const handleAudioCodeGeneration = async (audioUrl: string, instructions: string) => {
+    try {
+      const response = await fetch('/api/audio/process', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          audioUrl,
+          instructions,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const newOutput: CodeTerminalOutput = {
+          id: generateUUID(),
+          code: data.code,
+          language: data.language,
+          description: data.description,
+          timestamp: new Date(),
+        };
+        
+        setCodeOutputs(prev => [...prev, newOutput]);
+      }
+    } catch (error) {
+      console.error('Error generating code from audio:', error);
+    }
+  };
+
+  // Add function to run code
+  const handleRunCode = (code: string, language: string) => {
+    // This would typically send the code to a backend service for execution
+    console.log('Running code:', { code, language });
+    // For now, just show a toast
+    toast({
+      type: 'info',
+      description: `Running ${language} code...`,
+    });
+  };
 
   return (
     <>
@@ -182,6 +227,13 @@ export function Chat({
         votes={votes}
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
+      />
+
+      {/* Add Code Terminal */}
+      <CodeTerminal
+        outputs={codeOutputs}
+        onClear={() => setCodeOutputs([])}
+        onRunCode={handleRunCode}
       />
     </>
   );
