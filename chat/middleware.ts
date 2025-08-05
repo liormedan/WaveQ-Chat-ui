@@ -17,6 +17,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Check for admin mode - skip authentication for administrators
+  const isAdminMode = process.env.ADMIN_MODE === 'true' || process.env.SKIP_AUTH === 'true';
+  
+  if (isAdminMode) {
+    // Allow all requests in admin mode without authentication
+    return NextResponse.next();
+  }
+
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,
