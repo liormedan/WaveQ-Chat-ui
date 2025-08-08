@@ -1,32 +1,50 @@
 import { auth } from '@/app/(auth)/auth';
-import { getChatAudioContexts } from '@/lib/db/queries';
+import type { NextRequest } from 'next/server';
+import { getAudioContextsByChatId, getChatById } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
+
+  const session = await auth();
+
+  if (!session?.user) {
+    return new ChatSDKError('unauthorized:chat').toResponse();
+  }
+
+  // Get the chat to check permissions
+  const chat = await getChatById({ id });
+
+  if (!chat) {
+    return new ChatSDKError('not_found:chat', 'Chat not found').toResponse();
+  }
+
+  // Check if user has access to this chat
+  if (chat.visibility === 'private' && chat.userId !== session.user.id) {
+    return new ChatSDKError('unauthorized:chat', 'Access denied').toResponse();
+  }
+
   try {
-    const session = await auth();
+    const audioContexts = await getAudioContextsByChatId({ chatId: id });
 
-    if (!session?.user) {
-      return new ChatSDKError('unauthorized:chat').toResponse();
-    }
+    // Return only the necessary fields for efficiency
+    const simplifiedContexts = audioContexts.map((context) => ({
+      audioFileName: context.audioFileName,
+      audioFileUrl: context.audioFileUrl,
+      audioFileType: context.audioFileType,
+      audioDuration: context.audioDuration,
+      contextSummary: context.contextSummary,
+      audioTranscription: context.audioTranscription,
+    }));
 
-    const { id } = params;
-
-    // Get audio contexts for this chat
-    const audioContexts = await getChatAudioContexts({ chatId: id });
-
-    return Response.json({
-      audioContexts,
-    });
+    return Response.json(simplifiedContexts);
   } catch (error) {
-    if (error instanceof ChatSDKError) {
-      return error.toResponse();
-    }
-
-    console.error('Error fetching audio contexts:', error);
-    return new ChatSDKError('bad_request:api').toResponse();
+    return new ChatSDKError(
+      'bad_request:database',
+      'Failed to get audio contexts',
+    ).toResponse();
   }
 }

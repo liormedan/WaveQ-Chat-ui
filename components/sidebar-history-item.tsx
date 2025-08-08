@@ -1,4 +1,4 @@
-import type { Chat } from '@/lib/db/schema';
+import type { Chat, ChatWithAudioContext } from '@/lib/db/schema';
 import {
   SidebarMenuAction,
   SidebarMenuButton,
@@ -25,6 +25,7 @@ import {
 } from './icons';
 import { memo } from 'react';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { AudioPreview } from './audio-preview';
 
 const PureChatItem = ({
   chat,
@@ -32,7 +33,7 @@ const PureChatItem = ({
   onDelete,
   setOpenMobile,
 }: {
-  chat: Chat;
+  chat: Chat | ChatWithAudioContext;
   isActive: boolean;
   onDelete: (chatId: string) => void;
   setOpenMobile: (open: boolean) => void;
@@ -42,11 +43,40 @@ const PureChatItem = ({
     initialVisibilityType: chat.visibility,
   });
 
+  // Check if this chat has audio contexts
+  const hasAudioContexts =
+    'audioContexts' in chat && chat.audioContexts.length > 0;
+
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive}>
         <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
-          <span>{chat.title}</span>
+          <div className="flex flex-col gap-1 w-full">
+            <span className="truncate">{chat.title}</span>
+
+            {/* Audio previews */}
+            {hasAudioContexts && (
+              <div className="flex flex-col gap-1 mt-1">
+                {chat.audioContexts.slice(0, 2).map((audioContext, index) => (
+                  <AudioPreview
+                    key={`${audioContext.audioFileUrl}-${index}`}
+                    audioFileName={audioContext.audioFileName}
+                    audioFileUrl={audioContext.audioFileUrl}
+                    audioFileType={audioContext.audioFileType}
+                    audioDuration={audioContext.audioDuration}
+                    contextSummary={audioContext.contextSummary}
+                    compact={true}
+                    className="text-xs"
+                  />
+                ))}
+                {chat.audioContexts.length > 2 && (
+                  <div className="text-xs text-muted-foreground">
+                    +{chat.audioContexts.length - 2} more audio files
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </Link>
       </SidebarMenuButton>
 

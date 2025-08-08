@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authConfig } from '@/app/(auth)/auth.config';
 import { getGeneratedAudio } from '@/lib/services/generated-audio-service';
+import {
+  validateFileIntegrity,
+  fileIntegrityChecker,
+} from '@/lib/file-integrity';
+import { withErrorHandling } from '@/lib/error-handling';
 
 export async function POST(
   request: NextRequest,
@@ -113,76 +118,115 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  try {
-    const session = await getServerSession(authConfig);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  return withErrorHandling(
+    async () => {
+      const session = await getServerSession(authConfig);
+      if (!session?.user?.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
 
-    const chatId = params.id;
-    const { searchParams } = new URL(request.url);
-    const audioId = searchParams.get('audioId');
-    const format = searchParams.get('format') || 'mp3';
+      const chatId = params.id;
+      const { searchParams } = new URL(request.url);
+      const audioId = searchParams.get('audioId');
+      const format = searchParams.get('format') || 'mp3';
 
-    if (!audioId) {
-      return NextResponse.json(
-        { error: 'Audio ID is required' },
-        { status: 400 },
+      if (!audioId) {
+        return NextResponse.json(
+          { error: 'Audio ID is required' },
+          { status: 400 },
+        );
+      }
+
+      // Validate format
+      const validFormats = ['mp3', 'wav', 'flac', 'm4a', 'ogg'];
+      if (!validFormats.includes(format)) {
+        return NextResponse.json(
+          { error: 'Invalid format specified' },
+          { status: 400 },
+        );
+      }
+
+      // Get generated audio data
+      const audio = await getGeneratedAudio(audioId);
+      if (!audio) {
+        return NextResponse.json({ error: 'Audio not found' }, { status: 404 });
+      }
+
+      // Generate filename with metadata
+      const timestamp = new Date(audio.createdAt).toISOString().split('T')[0];
+      const processingType = audio.processingDetails.processingType;
+      const originalName = audio.originalAudioName.replace(/\.[^/.]+$/, '');
+      const filename = `${originalName}_${processingType}_${timestamp}.${format}`;
+
+      // Fetch the audio file
+      const response = await fetch(audio.generatedAudioUrl);
+
+      if (!response.ok) {
+        return NextResponse.json(
+          { error: 'Failed to fetch audio file' },
+          { status: 500 },
+        );
+      }
+
+      const audioBuffer = await response.arrayBuffer();
+      const audioBlob = new Blob([audioBuffer], {
+        type: getContentType(format),
+      });
+
+      // Perform file integrity validation
+      const integrityValidation = await validateFileIntegrity(
+        audioBlob,
+        filename,
       );
-    }
 
-    // Validate format
-    const validFormats = ['mp3', 'wav', 'flac', 'm4a', 'ogg'];
-    if (!validFormats.includes(format)) {
-      return NextResponse.json(
-        { error: 'Invalid format specified' },
-        { status: 400 },
-      );
-    }
+      if (!integrityValidation.isValid) {
+        return NextResponse.json(
+          {
+            error: 'Downloaded file integrity check failed',
+            details: {
+              errors: integrityValidation.errors,
+              warnings: integrityValidation.warnings,
+              suggestions: integrityValidation.suggestions,
+              integrityInfo: integrityValidation.integrityInfo,
+            },
+          },
+          { status: 500 },
+        );
+      }
 
-    // Get generated audio data
-    const audio = await getGeneratedAudio(audioId);
-    if (!audio) {
-      return NextResponse.json({ error: 'Audio not found' }, { status: 404 });
-    }
+      // Check if file is likely corrupted
+      if (fileIntegrityChecker.isLikelyCorrupted(audioBlob, filename)) {
+        return NextResponse.json(
+          {
+            error: 'Downloaded file appears to be corrupted or incomplete',
+            details: {
+              warnings: integrityValidation.warnings,
+              suggestions: integrityValidation.suggestions,
+            },
+          },
+          { status: 500 },
+        );
+      }
 
-    // Generate filename with metadata
-    const timestamp = new Date(audio.createdAt).toISOString().split('T')[0];
-    const processingType = audio.processingDetails.processingType;
-    const originalName = audio.originalAudioName.replace(/\.[^/.]+$/, '');
-    const filename = `${originalName}_${processingType}_${timestamp}.${format}`;
-
-    // In a real implementation, you would:
-    // 1. Convert the audio to the requested format
-    // 2. Generate the actual file
-    // 3. Return the file as a download response
-
-    // For now, we'll return the original file with a new filename
-    const response = await fetch(audio.generatedAudioUrl);
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: 'Failed to fetch audio file' },
-        { status: 500 },
-      );
-    }
-
-    const audioBuffer = await response.arrayBuffer();
-
-    return new NextResponse(audioBuffer, {
-      headers: {
-        'Content-Type': getContentType(format),
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'Content-Length': audioBuffer.byteLength.toString(),
-      },
-    });
-  } catch (error) {
-    console.error('Error downloading audio file:', error);
-    return NextResponse.json(
-      { error: 'Failed to download audio file' },
-      { status: 500 },
-    );
-  }
+      // Return the file with integrity headers
+      return new NextResponse(audioBuffer, {
+        headers: {
+          'Content-Type': getContentType(format),
+          'Content-Disposition': `attachment; filename="${filename}"`,
+          'Content-Length': audioBuffer.byteLength.toString(),
+          'X-File-Integrity-Hash':
+            integrityValidation.integrityInfo.currentHash,
+          'X-File-Integrity-Validated': 'true',
+          'X-File-Integrity-Warnings':
+            integrityValidation.warnings.length.toString(),
+        },
+      });
+    },
+    {
+      action: 'file_download',
+      additionalData: { audioId, format },
+    },
+  );
 }
 
 function getContentType(format: string): string {

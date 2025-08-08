@@ -34,6 +34,19 @@ export const chat = pgTable('Chat', {
 
 export type Chat = InferSelectModel<typeof chat>;
 
+// Extended Chat type with audio context information
+export type ChatWithAudioContext = Chat & {
+  audioContexts: Array<{
+    chatId: string;
+    audioFileName: string;
+    audioFileUrl: string;
+    audioFileType: string;
+    audioDuration: number | null;
+    contextSummary: string | null;
+    audioTranscription: string | null;
+  }>;
+};
+
 // DEPRECATED: The following schema is deprecated and will be removed in the future.
 // Read the migration guide at https://chat-sdk.dev/docs/migration-guides/message-parts
 export const messageDeprecated = pgTable('Message', {
