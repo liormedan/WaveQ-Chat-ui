@@ -1339,6 +1339,26 @@ export const ChevronUpIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
+export const ChevronRightIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        d="M6 4L10 8L6 12"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
 export const CompareIcon = ({ size = 16 }: { size?: number }) => {
   return (
     <svg
@@ -1413,8 +1433,8 @@ export const CheckIcon = ({ size = 16 }: { size?: number }) => (
       fill="currentColor"
     />
   </svg>
-);export 
-const SettingsIcon = ({ size = 16 }: { size?: number }) => (
+);
+export const SettingsIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"

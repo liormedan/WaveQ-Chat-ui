@@ -17,41 +17,63 @@ import {
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
+// Import both PostgreSQL and SQLite schemas
 import {
-  user,
-  chat,
-  type User,
-  document,
-  type Suggestion,
-  suggestion,
-  message,
-  vote,
-  type DBMessage,
-  type Chat,
-  type ChatWithAudioContext,
-  stream,
-  audioContext,
-  audioContextMessage,
-  type AudioContext,
-  type AudioContextMessage,
-  generatedAudio,
-  generatedAudioMessage,
-  type GeneratedAudio,
-  type GeneratedAudioMessage,
+  user as pgUser,
+  chat as pgChat,
+  type User as PGUser,
+  document as pgDocument,
+  type Suggestion as PGSuggestion,
+  suggestion as pgSuggestion,
+  message as pgMessage,
+  vote as pgVote,
+  type DBMessage as PGDBMessage,
+  type Chat as PGChat,
+  type ChatWithAudioContext as PGChatWithAudioContext,
+  stream as pgStream,
+  audioContext as pgAudioContext,
+  audioContextMessage as pgAudioContextMessage,
+  type AudioContext as PGAudioContext,
+  type AudioContextMessage as PGAudioContextMessage,
+  generatedAudio as pgGeneratedAudio,
+  generatedAudioMessage as pgGeneratedAudioMessage,
+  type GeneratedAudio as PGGeneratedAudio,
+  type GeneratedAudioMessage as PGGeneratedAudioMessage,
 } from './schema';
+
+import {
+  user as sqliteUser,
+  chat as sqliteChat,
+  type User as SQLiteUser,
+  document as sqliteDocument,
+  type Suggestion as SQLiteSuggestion,
+  suggestion as sqliteSuggestion,
+  message as sqliteMessage,
+  vote as sqliteVote,
+  type DBMessage as SQLiteDBMessage,
+  type Chat as SQLiteChat,
+  type ChatWithAudioContext as SQLiteChatWithAudioContext,
+  stream as sqliteStream,
+  audioContext as sqliteAudioContext,
+  audioContextMessage as sqliteAudioContextMessage,
+  type AudioContext as SQLiteAudioContext,
+  type AudioContextMessage as SQLiteAudioContextMessage,
+  generatedAudio as sqliteGeneratedAudio,
+  generatedAudioMessage as sqliteGeneratedAudioMessage,
+  type GeneratedAudio as SQLiteGeneratedAudio,
+  type GeneratedAudioMessage as SQLiteGeneratedAudioMessage,
+} from './schema-sqlite';
+
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
 
-// Optionally, if not using email/pass login, you can
-// use the Drizzle adapter for Auth.js / NextAuth
-// https://authjs.dev/reference/adapter/drizzle
-
 // Database connection with fallback for development
 let client: any;
 let db: any;
+let isUsingSQLite = false;
 
 try {
   if (
@@ -61,6 +83,7 @@ try {
   ) {
     client = postgres(process.env.POSTGRES_URL);
     db = drizzle(client);
+    isUsingSQLite = false;
   } else {
     // Fallback for development - use SQLite
     console.warn(
@@ -69,6 +92,7 @@ try {
     const { db: sqliteDb, initializeDatabase } = await import('./sqlite');
     initializeDatabase();
     db = sqliteDb;
+    isUsingSQLite = true;
   }
 } catch (error) {
   console.error('❌ Database connection failed:', error);
@@ -76,11 +100,51 @@ try {
   const { db: sqliteDb, initializeDatabase } = await import('./sqlite');
   initializeDatabase();
   db = sqliteDb;
+  isUsingSQLite = true;
 }
 
-export async function getUser(email: string): Promise<Array<User>> {
+// Helper function to get the correct schema based on database type
+function getSchema() {
+  if (isUsingSQLite) {
+    return {
+      user: sqliteUser,
+      chat: sqliteChat,
+      message: sqliteMessage,
+      vote: sqliteVote,
+      document: sqliteDocument,
+      suggestion: sqliteSuggestion,
+      stream: sqliteStream,
+      audioContext: sqliteAudioContext,
+      audioContextMessage: sqliteAudioContextMessage,
+      generatedAudio: sqliteGeneratedAudio,
+      generatedAudioMessage: sqliteGeneratedAudioMessage,
+    };
+  } else {
+    return {
+      user: pgUser,
+      chat: pgChat,
+      message: pgMessage,
+      vote: pgVote,
+      document: pgDocument,
+      suggestion: pgSuggestion,
+      stream: pgStream,
+      audioContext: pgAudioContext,
+      audioContextMessage: pgAudioContextMessage,
+      generatedAudio: pgGeneratedAudio,
+      generatedAudioMessage: pgGeneratedAudioMessage,
+    };
+  }
+}
+
+export async function getUser(
+  email: string,
+): Promise<Array<SQLiteUser | PGUser>> {
+  const schema = getSchema();
   try {
-    return await db.select().from(user).where(eq(user.email, email));
+    return await db
+      .select()
+      .from(schema.user)
+      .where(eq(schema.user.email, email));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -90,24 +154,35 @@ export async function getUser(email: string): Promise<Array<User>> {
 }
 
 export async function createUser(email: string, password: string) {
+  const schema = getSchema();
   const hashedPassword = generateHashedPassword(password);
 
   try {
-    return await db.insert(user).values({ email, password: hashedPassword });
+    return await db
+      .insert(schema.user)
+      .values({ email, password: hashedPassword });
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to create user');
   }
 }
 
 export async function createGuestUser() {
+  const schema = getSchema();
   const email = `guest-${Date.now()}`;
   const password = generateHashedPassword(generateUUID());
 
   try {
-    return await db.insert(user).values({ email, password }).returning({
-      id: user.id,
-      email: user.email,
-    });
+    return await db
+      .insert(schema.user)
+      .values({
+        id: generateUUID(),
+        email,
+        password,
+      })
+      .returning({
+        id: schema.user.id,
+        email: schema.user.email,
+      });
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -127,8 +202,9 @@ export async function saveChat({
   title: string;
   visibility: VisibilityType;
 }) {
+  const schema = getSchema();
   try {
-    return await db.insert(chat).values({
+    return await db.insert(schema.chat).values({
       id,
       createdAt: new Date(),
       userId,
@@ -141,14 +217,15 @@ export async function saveChat({
 }
 
 export async function deleteChatById({ id }: { id: string }) {
+  const schema = getSchema();
   try {
-    await db.delete(vote).where(eq(vote.chatId, id));
-    await db.delete(message).where(eq(message.chatId, id));
-    await db.delete(stream).where(eq(stream.chatId, id));
+    await db.delete(schema.vote).where(eq(schema.vote.chatId, id));
+    await db.delete(schema.message).where(eq(schema.message.chatId, id));
+    await db.delete(schema.stream).where(eq(schema.stream.chatId, id));
 
     const [chatsDeleted] = await db
-      .delete(chat)
-      .where(eq(chat.id, id))
+      .delete(schema.chat)
+      .where(eq(schema.chat.id, id))
       .returning();
     return chatsDeleted;
   } catch (error) {
@@ -170,28 +247,29 @@ export async function getChatsByUserId({
   startingAfter: string | null;
   endingBefore: string | null;
 }) {
+  const schema = getSchema();
   try {
     const extendedLimit = limit + 1;
 
     const query = (whereCondition?: SQL<any>) =>
       db
         .select()
-        .from(chat)
+        .from(schema.chat)
         .where(
           whereCondition
-            ? and(whereCondition, eq(chat.userId, id))
-            : eq(chat.userId, id),
+            ? and(whereCondition, eq(schema.chat.userId, id))
+            : eq(schema.chat.userId, id),
         )
-        .orderBy(desc(chat.createdAt))
+        .orderBy(desc(schema.chat.createdAt))
         .limit(extendedLimit);
 
-    let filteredChats: Array<Chat> = [];
+    let filteredChats: Array<PGChat | SQLiteChat> = [];
 
     if (startingAfter) {
       const [selectedChat] = await db
         .select()
-        .from(chat)
-        .where(eq(chat.id, startingAfter))
+        .from(schema.chat)
+        .where(eq(schema.chat.id, startingAfter))
         .limit(1);
 
       if (!selectedChat) {
@@ -201,12 +279,14 @@ export async function getChatsByUserId({
         );
       }
 
-      filteredChats = await query(gt(chat.createdAt, selectedChat.createdAt));
+      filteredChats = await query(
+        gt(schema.chat.createdAt, selectedChat.createdAt),
+      );
     } else if (endingBefore) {
       const [selectedChat] = await db
         .select()
-        .from(chat)
-        .where(eq(chat.id, endingBefore))
+        .from(schema.chat)
+        .where(eq(schema.chat.id, endingBefore))
         .limit(1);
 
       if (!selectedChat) {
@@ -216,7 +296,9 @@ export async function getChatsByUserId({
         );
       }
 
-      filteredChats = await query(lt(chat.createdAt, selectedChat.createdAt));
+      filteredChats = await query(
+        lt(schema.chat.createdAt, selectedChat.createdAt),
+      );
     } else {
       filteredChats = await query();
     }
@@ -248,31 +330,34 @@ export async function getChatsByUserIdWithAudioContext({
   endingBefore: string | null;
   includeAudioContext?: boolean;
 }): Promise<{
-  chats: Array<Chat | ChatWithAudioContext>;
+  chats: Array<
+    PGChat | SQLiteChat | PGChatWithAudioContext | SQLiteChatWithAudioContext
+  >;
   hasMore: boolean;
 }> {
+  const schema = getSchema();
   try {
     const extendedLimit = limit + 1;
 
     const query = (whereCondition?: SQL<any>) =>
       db
         .select()
-        .from(chat)
+        .from(schema.chat)
         .where(
           whereCondition
-            ? and(whereCondition, eq(chat.userId, id))
-            : eq(chat.userId, id),
+            ? and(whereCondition, eq(schema.chat.userId, id))
+            : eq(schema.chat.userId, id),
         )
-        .orderBy(desc(chat.createdAt))
+        .orderBy(desc(schema.chat.createdAt))
         .limit(extendedLimit);
 
-    let filteredChats: Array<Chat> = [];
+    let filteredChats: Array<PGChat | SQLiteChat> = [];
 
     if (startingAfter) {
       const [selectedChat] = await db
         .select()
-        .from(chat)
-        .where(eq(chat.id, startingAfter))
+        .from(schema.chat)
+        .where(eq(schema.chat.id, startingAfter))
         .limit(1);
 
       if (!selectedChat) {
@@ -282,12 +367,14 @@ export async function getChatsByUserIdWithAudioContext({
         );
       }
 
-      filteredChats = await query(gt(chat.createdAt, selectedChat.createdAt));
+      filteredChats = await query(
+        gt(schema.chat.createdAt, selectedChat.createdAt),
+      );
     } else if (endingBefore) {
       const [selectedChat] = await db
         .select()
-        .from(chat)
-        .where(eq(chat.id, endingBefore))
+        .from(schema.chat)
+        .where(eq(schema.chat.id, endingBefore))
         .limit(1);
 
       if (!selectedChat) {
@@ -297,7 +384,9 @@ export async function getChatsByUserIdWithAudioContext({
         );
       }
 
-      filteredChats = await query(lt(chat.createdAt, selectedChat.createdAt));
+      filteredChats = await query(
+        lt(schema.chat.createdAt, selectedChat.createdAt),
+      );
     } else {
       filteredChats = await query();
     }
@@ -309,33 +398,33 @@ export async function getChatsByUserIdWithAudioContext({
       // Get audio contexts for all chats in one query
       const audioContexts = await db
         .select({
-          chatId: audioContext.chatId,
-          audioFileName: audioContext.audioFileName,
-          audioFileUrl: audioContext.audioFileUrl,
-          audioFileType: audioContext.audioFileType,
-          audioDuration: audioContext.audioDuration,
-          contextSummary: audioContext.contextSummary,
-          audioTranscription: audioContext.audioTranscription,
+          chatId: schema.audioContext.chatId,
+          audioFileName: schema.audioContext.audioFileName,
+          audioFileUrl: schema.audioContext.audioFileUrl,
+          audioFileType: schema.audioContext.audioFileType,
+          audioDuration: schema.audioContext.audioDuration,
+          contextSummary: schema.audioContext.contextSummary,
+          audioTranscription: schema.audioContext.audioTranscription,
         })
-        .from(audioContext)
-        .where(inArray(audioContext.chatId, chatIds));
+        .from(schema.audioContext)
+        .where(inArray(schema.audioContext.chatId, chatIds));
 
       // Group audio contexts by chat ID
-      const audioContextsByChatId = audioContexts.reduce(
-        (acc, context) => {
+      const audioContextsByChat = audioContexts.reduce(
+        (acc: any, context: any) => {
           if (!acc[context.chatId]) {
             acc[context.chatId] = [];
           }
           acc[context.chatId].push(context);
           return acc;
         },
-        {} as Record<string, typeof audioContexts>,
+        {},
       );
 
       // Attach audio context information to chats
       filteredChats = filteredChats.map((chat) => ({
         ...chat,
-        audioContexts: audioContextsByChatId[chat.id] || [],
+        audioContexts: audioContextsByChat[chat.id] || [],
       }));
     }
 
@@ -354,8 +443,12 @@ export async function getChatsByUserIdWithAudioContext({
 }
 
 export async function getChatById({ id }: { id: string }) {
+  const schema = getSchema();
   try {
-    const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
+    const [selectedChat] = await db
+      .select()
+      .from(schema.chat)
+      .where(eq(schema.chat.id, id));
     return selectedChat;
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to get chat by id');
@@ -365,22 +458,24 @@ export async function getChatById({ id }: { id: string }) {
 export async function saveMessages({
   messages,
 }: {
-  messages: Array<DBMessage>;
+  messages: Array<PGDBMessage | SQLiteDBMessage>;
 }) {
+  const schema = getSchema();
   try {
-    return await db.insert(message).values(messages);
+    return await db.insert(schema.message).values(messages);
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to save messages');
   }
 }
 
 export async function getMessagesByChatId({ id }: { id: string }) {
+  const schema = getSchema();
   try {
     return await db
       .select()
-      .from(message)
-      .where(eq(message.chatId, id))
-      .orderBy(asc(message.createdAt));
+      .from(schema.message)
+      .where(eq(schema.message.chatId, id))
+      .orderBy(asc(schema.message.createdAt));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -398,19 +493,25 @@ export async function voteMessage({
   messageId: string;
   type: 'up' | 'down';
 }) {
+  const schema = getSchema();
   try {
     const [existingVote] = await db
       .select()
-      .from(vote)
-      .where(and(eq(vote.messageId, messageId)));
+      .from(schema.vote)
+      .where(and(eq(schema.vote.messageId, messageId)));
 
     if (existingVote) {
       return await db
-        .update(vote)
+        .update(schema.vote)
         .set({ isUpvoted: type === 'up' })
-        .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
+        .where(
+          and(
+            eq(schema.vote.messageId, messageId),
+            eq(schema.vote.chatId, chatId),
+          ),
+        );
     }
-    return await db.insert(vote).values({
+    return await db.insert(schema.vote).values({
       chatId,
       messageId,
       isUpvoted: type === 'up',
@@ -421,8 +522,12 @@ export async function voteMessage({
 }
 
 export async function getVotesByChatId({ id }: { id: string }) {
+  const schema = getSchema();
   try {
-    return await db.select().from(vote).where(eq(vote.chatId, id));
+    return await db
+      .select()
+      .from(schema.vote)
+      .where(eq(schema.vote.chatId, id));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -444,9 +549,10 @@ export async function saveDocument({
   content: string;
   userId: string;
 }) {
+  const schema = getSchema();
   try {
     return await db
-      .insert(document)
+      .insert(schema.document)
       .values({
         id,
         title,
@@ -462,12 +568,13 @@ export async function saveDocument({
 }
 
 export async function getDocumentsById({ id }: { id: string }) {
+  const schema = getSchema();
   try {
     const documents = await db
       .select()
-      .from(document)
-      .where(eq(document.id, id))
-      .orderBy(asc(document.createdAt));
+      .from(schema.document)
+      .where(eq(schema.document.id, id))
+      .orderBy(asc(schema.document.createdAt));
 
     return documents;
   } catch (error) {
@@ -479,12 +586,13 @@ export async function getDocumentsById({ id }: { id: string }) {
 }
 
 export async function getDocumentById({ id }: { id: string }) {
+  const schema = getSchema();
   try {
     const [selectedDocument] = await db
       .select()
-      .from(document)
-      .where(eq(document.id, id))
-      .orderBy(desc(document.createdAt));
+      .from(schema.document)
+      .where(eq(schema.document.id, id))
+      .orderBy(desc(schema.document.createdAt));
 
     return selectedDocument;
   } catch (error) {
@@ -502,19 +610,25 @@ export async function deleteDocumentsByIdAfterTimestamp({
   id: string;
   timestamp: Date;
 }) {
+  const schema = getSchema();
   try {
     await db
-      .delete(suggestion)
+      .delete(schema.suggestion)
       .where(
         and(
-          eq(suggestion.documentId, id),
-          gt(suggestion.documentCreatedAt, timestamp),
+          eq(schema.suggestion.documentId, id),
+          gt(schema.document.createdAt, timestamp),
         ),
       );
 
     return await db
-      .delete(document)
-      .where(and(eq(document.id, id), gt(document.createdAt, timestamp)))
+      .delete(schema.document)
+      .where(
+        and(
+          eq(schema.document.id, id),
+          gt(schema.document.createdAt, timestamp),
+        ),
+      )
       .returning();
   } catch (error) {
     throw new ChatSDKError(
@@ -527,10 +641,11 @@ export async function deleteDocumentsByIdAfterTimestamp({
 export async function saveSuggestions({
   suggestions,
 }: {
-  suggestions: Array<Suggestion>;
+  suggestions: Array<PGSuggestion | SQLiteSuggestion>;
 }) {
+  const schema = getSchema();
   try {
-    return await db.insert(suggestion).values(suggestions);
+    return await db.insert(schema.suggestion).values(suggestions);
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -544,11 +659,12 @@ export async function getSuggestionsByDocumentId({
 }: {
   documentId: string;
 }) {
+  const schema = getSchema();
   try {
     return await db
       .select()
-      .from(suggestion)
-      .where(and(eq(suggestion.documentId, documentId)));
+      .from(schema.suggestion)
+      .where(and(eq(schema.suggestion.documentId, documentId)));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -558,8 +674,12 @@ export async function getSuggestionsByDocumentId({
 }
 
 export async function getMessageById({ id }: { id: string }) {
+  const schema = getSchema();
   try {
-    return await db.select().from(message).where(eq(message.id, id));
+    return await db
+      .select()
+      .from(schema.message)
+      .where(eq(schema.message.id, id));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -575,27 +695,37 @@ export async function deleteMessagesByChatIdAfterTimestamp({
   chatId: string;
   timestamp: Date;
 }) {
+  const schema = getSchema();
   try {
     const messagesToDelete = await db
-      .select({ id: message.id })
-      .from(message)
+      .select({ id: schema.message.id })
+      .from(schema.message)
       .where(
-        and(eq(message.chatId, chatId), gte(message.createdAt, timestamp)),
+        and(
+          eq(schema.message.chatId, chatId),
+          gte(schema.message.createdAt, timestamp),
+        ),
       );
 
-    const messageIds = messagesToDelete.map((message) => message.id);
+    const messageIds = messagesToDelete.map((message: any) => message.id);
 
     if (messageIds.length > 0) {
       await db
-        .delete(vote)
+        .delete(schema.vote)
         .where(
-          and(eq(vote.chatId, chatId), inArray(vote.messageId, messageIds)),
+          and(
+            eq(schema.vote.chatId, chatId),
+            inArray(schema.vote.messageId, messageIds),
+          ),
         );
 
       return await db
-        .delete(message)
+        .delete(schema.message)
         .where(
-          and(eq(message.chatId, chatId), inArray(message.id, messageIds)),
+          and(
+            eq(schema.message.chatId, chatId),
+            inArray(schema.message.id, messageIds),
+          ),
         );
     }
   } catch (error) {
@@ -613,8 +743,12 @@ export async function updateChatVisiblityById({
   chatId: string;
   visibility: 'private' | 'public';
 }) {
+  const schema = getSchema();
   try {
-    return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
+    return await db
+      .update(schema.chat)
+      .set({ visibility })
+      .where(eq(schema.chat.id, chatId));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -627,20 +761,21 @@ export async function getMessageCountByUserId({
   id,
   differenceInHours,
 }: { id: string; differenceInHours: number }) {
+  const schema = getSchema();
   try {
     const twentyFourHoursAgo = new Date(
       Date.now() - differenceInHours * 60 * 60 * 1000,
     );
 
     const [stats] = await db
-      .select({ count: count(message.id) })
-      .from(message)
-      .innerJoin(chat, eq(message.chatId, chat.id))
+      .select({ count: count(schema.message.id) })
+      .from(schema.message)
+      .innerJoin(schema.chat, eq(schema.message.chatId, schema.chat.id))
       .where(
         and(
-          eq(chat.userId, id),
-          gte(message.createdAt, twentyFourHoursAgo),
-          eq(message.role, 'user'),
+          eq(schema.chat.userId, id),
+          gte(schema.message.createdAt, twentyFourHoursAgo),
+          eq(schema.message.role, 'user'),
         ),
       )
       .execute();
@@ -661,9 +796,10 @@ export async function createStreamId({
   streamId: string;
   chatId: string;
 }) {
+  const schema = getSchema();
   try {
     await db
-      .insert(stream)
+      .insert(schema.stream)
       .values({ id: streamId, chatId, createdAt: new Date() });
   } catch (error) {
     throw new ChatSDKError(
@@ -674,15 +810,16 @@ export async function createStreamId({
 }
 
 export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
+  const schema = getSchema();
   try {
     const streamIds = await db
-      .select({ id: stream.id })
-      .from(stream)
-      .where(eq(stream.chatId, chatId))
-      .orderBy(asc(stream.createdAt))
+      .select({ id: schema.stream.id })
+      .from(schema.stream)
+      .where(eq(schema.stream.chatId, chatId))
+      .orderBy(asc(schema.stream.createdAt))
       .execute();
 
-    return streamIds.map(({ id }) => id);
+    return streamIds.map(({ id }: { id: string }) => id);
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -715,9 +852,10 @@ export async function saveAudioContext({
   audioMetadata?: any;
   contextSummary?: string;
 }) {
+  const schema = getSchema();
   try {
     const now = new Date();
-    return await db.insert(audioContext).values({
+    return await db.insert(schema.audioContext).values({
       chatId,
       audioFileId,
       audioFileName,
@@ -740,12 +878,13 @@ export async function saveAudioContext({
 }
 
 export async function getAudioContextsByChatId({ chatId }: { chatId: string }) {
+  const schema = getSchema();
   try {
     return await db
       .select()
-      .from(audioContext)
-      .where(eq(audioContext.chatId, chatId))
-      .orderBy(desc(audioContext.createdAt));
+      .from(schema.audioContext)
+      .where(eq(schema.audioContext.chatId, chatId))
+      .orderBy(desc(schema.audioContext.createdAt));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -755,11 +894,12 @@ export async function getAudioContextsByChatId({ chatId }: { chatId: string }) {
 }
 
 export async function getAudioContextById({ id }: { id: string }) {
+  const schema = getSchema();
   try {
     const [context] = await db
       .select()
-      .from(audioContext)
-      .where(eq(audioContext.id, id));
+      .from(schema.audioContext)
+      .where(eq(schema.audioContext.id, id));
     return context;
   } catch (error) {
     throw new ChatSDKError(
@@ -780,16 +920,17 @@ export async function updateAudioContext({
   contextSummary?: string;
   audioMetadata?: any;
 }) {
+  const schema = getSchema();
   try {
     return await db
-      .update(audioContext)
+      .update(schema.audioContext)
       .set({
         audioTranscription,
         contextSummary,
         audioMetadata,
         updatedAt: new Date(),
       })
-      .where(eq(audioContext.id, id));
+      .where(eq(schema.audioContext.id, id));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -811,8 +952,9 @@ export async function saveAudioContextMessage({
   contextType: 'reference' | 'analysis' | 'question' | 'response';
   contextData?: any;
 }) {
+  const schema = getSchema();
   try {
-    return await db.insert(audioContextMessage).values({
+    return await db.insert(schema.audioContextMessage).values({
       audioContextId,
       messageId,
       timestamp,
@@ -833,12 +975,13 @@ export async function getAudioContextMessagesByContextId({
 }: {
   audioContextId: string;
 }) {
+  const schema = getSchema();
   try {
     return await db
       .select()
-      .from(audioContextMessage)
-      .where(eq(audioContextMessage.audioContextId, audioContextId))
-      .orderBy(asc(audioContextMessage.createdAt));
+      .from(schema.audioContextMessage)
+      .where(eq(schema.audioContextMessage.audioContextId, audioContextId))
+      .orderBy(asc(schema.audioContextMessage.createdAt));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -852,11 +995,12 @@ export async function getAudioContextMessagesByMessageId({
 }: {
   messageId: string;
 }) {
+  const schema = getSchema();
   try {
     return await db
       .select()
-      .from(audioContextMessage)
-      .where(eq(audioContextMessage.messageId, messageId));
+      .from(schema.audioContextMessage)
+      .where(eq(schema.audioContextMessage.messageId, messageId));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -896,9 +1040,10 @@ export async function saveGeneratedAudio({
   qualityMetrics?: any;
   metadata: any;
 }) {
+  const schema = getSchema();
   try {
     const now = new Date();
-    return await db.insert(generatedAudio).values({
+    return await db.insert(schema.generatedAudio).values({
       chatId,
       originalAudioId,
       originalAudioName,
@@ -924,12 +1069,13 @@ export async function saveGeneratedAudio({
 export async function getGeneratedAudiosByChatId({
   chatId,
 }: { chatId: string }) {
+  const schema = getSchema();
   try {
     return await db
       .select()
-      .from(generatedAudio)
-      .where(eq(generatedAudio.chatId, chatId))
-      .orderBy(desc(generatedAudio.createdAt));
+      .from(schema.generatedAudio)
+      .where(eq(schema.generatedAudio.chatId, chatId))
+      .orderBy(desc(schema.generatedAudio.createdAt));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -939,11 +1085,12 @@ export async function getGeneratedAudiosByChatId({
 }
 
 export async function getGeneratedAudioById({ id }: { id: string }) {
+  const schema = getSchema();
   try {
     const result = await db
       .select()
-      .from(generatedAudio)
-      .where(eq(generatedAudio.id, id));
+      .from(schema.generatedAudio)
+      .where(eq(schema.generatedAudio.id, id));
     return result[0] || null;
   } catch (error) {
     throw new ChatSDKError(
@@ -966,9 +1113,10 @@ export async function updateGeneratedAudio({
   qualityMetrics?: any;
   metadata?: any;
 }) {
+  const schema = getSchema();
   try {
     return await db
-      .update(generatedAudio)
+      .update(schema.generatedAudio)
       .set({
         processingSteps,
         totalProcessingTime,
@@ -976,7 +1124,7 @@ export async function updateGeneratedAudio({
         metadata,
         updatedAt: new Date(),
       })
-      .where(eq(generatedAudio.id, id));
+      .where(eq(schema.generatedAudio.id, id));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -999,8 +1147,9 @@ export async function saveGeneratedAudioMessage({
     | 'download-request';
   metadata?: any;
 }) {
+  const schema = getSchema();
   try {
-    return await db.insert(generatedAudioMessage).values({
+    return await db.insert(schema.generatedAudioMessage).values({
       generatedAudioId,
       messageId,
       messageType,
@@ -1020,12 +1169,15 @@ export async function getGeneratedAudioMessagesByAudioId({
 }: {
   generatedAudioId: string;
 }) {
+  const schema = getSchema();
   try {
     return await db
       .select()
-      .from(generatedAudioMessage)
-      .where(eq(generatedAudioMessage.generatedAudioId, generatedAudioId))
-      .orderBy(asc(generatedAudioMessage.createdAt));
+      .from(schema.generatedAudioMessage)
+      .where(
+        eq(schema.generatedAudioMessage.generatedAudioId, generatedAudioId),
+      )
+      .orderBy(asc(schema.generatedAudioMessage.createdAt));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -1039,11 +1191,12 @@ export async function getGeneratedAudioMessagesByMessageId({
 }: {
   messageId: string;
 }) {
+  const schema = getSchema();
   try {
     return await db
       .select()
-      .from(generatedAudioMessage)
-      .where(eq(generatedAudioMessage.messageId, messageId));
+      .from(schema.generatedAudioMessage)
+      .where(eq(schema.generatedAudioMessage.messageId, messageId));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -1072,22 +1225,25 @@ export async function getProcessingHistory({
   dateRange?: { start: Date; end: Date };
   status?: 'completed' | 'error' | 'processing';
 }) {
+  const schema = getSchema();
   try {
     let query = db
       .select()
-      .from(generatedAudio)
-      .where(eq(generatedAudio.chatId, chatId));
+      .from(schema.generatedAudio)
+      .where(eq(schema.generatedAudio.chatId, chatId));
 
     // Apply filters
     if (processingType) {
-      query = query.where(eq(generatedAudio.processingType, processingType));
+      query = query.where(
+        eq(schema.generatedAudio.processingType, processingType),
+      );
     }
 
     if (dateRange) {
       query = query.where(
         and(
-          gte(generatedAudio.createdAt, dateRange.start),
-          lte(generatedAudio.createdAt, dateRange.end),
+          gte(schema.generatedAudio.createdAt, dateRange.start),
+          lte(schema.generatedAudio.createdAt, dateRange.end),
         ),
       );
     }
@@ -1098,26 +1254,26 @@ export async function getProcessingHistory({
       if (status === 'completed') {
         // Filter for completed processing (all steps completed)
         query = query.where(
-          sql`${generatedAudio.processingSteps} @> '[{"status": "completed"}]'::jsonb`,
+          sql`${schema.generatedAudio.processingSteps} @> '[{"status": "completed"}]'::jsonb`,
         );
       } else if (status === 'error') {
         // Filter for error status
         query = query.where(
-          sql`${generatedAudio.processingSteps} @> '[{"status": "error"}]'::jsonb`,
+          sql`${schema.generatedAudio.processingSteps} @> '[{"status": "error"}]'::jsonb`,
         );
       }
     }
 
     const results = await query
-      .orderBy(desc(generatedAudio.createdAt))
+      .orderBy(desc(schema.generatedAudio.createdAt))
       .limit(limit)
       .offset(offset);
 
     // Get total count for pagination
     const countQuery = db
       .select({ count: sql<number>`count(*)` })
-      .from(generatedAudio)
-      .where(eq(generatedAudio.chatId, chatId));
+      .from(schema.generatedAudio)
+      .where(eq(schema.generatedAudio.chatId, chatId));
 
     const countResult = await countQuery;
     const totalCount = countResult[0]?.count || 0;
@@ -1139,27 +1295,28 @@ export async function getProcessingHistory({
  * Get processing statistics for a chat
  */
 export async function getProcessingStats({ chatId }: { chatId: string }) {
+  const schema = getSchema();
   try {
     const stats = await db
       .select({
         totalProcessed: sql<number>`count(*)`,
-        totalProcessingTime: sql<number>`sum(${generatedAudio.totalProcessingTime})`,
-        averageProcessingTime: sql<number>`avg(${generatedAudio.totalProcessingTime})`,
-        processingTypes: sql<string>`json_agg(distinct ${generatedAudio.processingType})`,
-        recentActivity: sql<number>`count(*) filter (where ${generatedAudio.createdAt} > now() - interval '7 days')`,
+        totalProcessingTime: sql<number>`sum(${schema.generatedAudio.totalProcessingTime})`,
+        averageProcessingTime: sql<number>`avg(${schema.generatedAudio.totalProcessingTime})`,
+        processingTypes: sql<string>`json_agg(distinct ${schema.generatedAudio.processingType})`,
+        recentActivity: sql<number>`count(*) filter (where ${schema.generatedAudio.createdAt} > now() - interval '7 days')`,
       })
-      .from(generatedAudio)
-      .where(eq(generatedAudio.chatId, chatId));
+      .from(schema.generatedAudio)
+      .where(eq(schema.generatedAudio.chatId, chatId));
 
     const typeStats = await db
       .select({
-        processingType: generatedAudio.processingType,
+        processingType: schema.generatedAudio.processingType,
         count: sql<number>`count(*)`,
-        avgTime: sql<number>`avg(${generatedAudio.totalProcessingTime})`,
+        avgTime: sql<number>`avg(${schema.generatedAudio.totalProcessingTime})`,
       })
-      .from(generatedAudio)
-      .where(eq(generatedAudio.chatId, chatId))
-      .groupBy(generatedAudio.processingType);
+      .from(schema.generatedAudio)
+      .where(eq(schema.generatedAudio.chatId, chatId))
+      .groupBy(schema.generatedAudio.processingType);
 
     return {
       overall: stats[0] || {
@@ -1191,6 +1348,7 @@ export async function cleanupOldGeneratedAudio({
   olderThanDays?: number;
   keepCount?: number;
 }) {
+  const schema = getSchema();
   try {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
@@ -1198,49 +1356,52 @@ export async function cleanupOldGeneratedAudio({
     // Get files to delete (older than cutoff date, but keep the most recent ones)
     const filesToDelete = await db
       .select({
-        id: generatedAudio.id,
-        generatedAudioUrl: generatedAudio.generatedAudioUrl,
+        id: schema.generatedAudio.id,
+        generatedAudioUrl: schema.generatedAudio.generatedAudioUrl,
       })
-      .from(generatedAudio)
+      .from(schema.generatedAudio)
       .where(
         and(
-          eq(generatedAudio.chatId, chatId),
-          lt(generatedAudio.createdAt, cutoffDate),
+          eq(schema.generatedAudio.chatId, chatId),
+          lt(schema.generatedAudio.createdAt, cutoffDate),
         ),
       )
-      .orderBy(asc(generatedAudio.createdAt))
+      .orderBy(asc(schema.generatedAudio.createdAt))
       .limit(1000); // Safety limit
 
     // Keep the most recent files
     const recentFiles = await db
-      .select({ id: generatedAudio.id })
-      .from(generatedAudio)
-      .where(eq(generatedAudio.chatId, chatId))
-      .orderBy(desc(generatedAudio.createdAt))
+      .select({ id: schema.generatedAudio.id })
+      .from(schema.generatedAudio)
+      .where(eq(schema.generatedAudio.chatId, chatId))
+      .orderBy(desc(schema.generatedAudio.createdAt))
       .limit(keepCount);
 
-    const recentFileIds = new Set(recentFiles.map((f) => f.id));
-    const filesToActuallyDelete = filesToDelete.filter(
-      (f) => !recentFileIds.has(f.id),
+    const recentFileIds = recentFiles.map((f: any) => f.id);
+    const filesToKeep = filesToDelete.filter((f: any) =>
+      recentFileIds.includes(f.id),
     );
+    const fileIds = filesToDelete
+      .filter((f: any) => !recentFileIds.includes(f.id))
+      .map((f: any) => f.id);
 
-    if (filesToActuallyDelete.length === 0) {
+    if (fileIds.length === 0) {
       return { deletedCount: 0, filesDeleted: [] };
     }
 
-    const fileIds = filesToActuallyDelete.map((f) => f.id);
-
     // Delete the files
-    await db.delete(generatedAudio).where(inArray(generatedAudio.id, fileIds));
+    await db
+      .delete(schema.generatedAudio)
+      .where(inArray(schema.generatedAudio.id, fileIds));
 
     // Delete associated messages
     await db
-      .delete(generatedAudioMessage)
-      .where(inArray(generatedAudioMessage.generatedAudioId, fileIds));
+      .delete(schema.generatedAudioMessage)
+      .where(inArray(schema.generatedAudioMessage.generatedAudioId, fileIds));
 
     return {
-      deletedCount: filesToActuallyDelete.length,
-      filesDeleted: filesToActuallyDelete,
+      deletedCount: fileIds.length,
+      filesDeleted: filesToDelete,
     };
   } catch (error) {
     throw new ChatSDKError(
@@ -1258,17 +1419,18 @@ export async function getDownloadHistory({
 }: {
   generatedAudioId: string;
 }) {
+  const schema = getSchema();
   try {
     return await db
       .select()
-      .from(generatedAudioMessage)
+      .from(schema.generatedAudioMessage)
       .where(
         and(
-          eq(generatedAudioMessage.generatedAudioId, generatedAudioId),
-          eq(generatedAudioMessage.messageType, 'download-request'),
+          eq(schema.generatedAudioMessage.generatedAudioId, generatedAudioId),
+          eq(schema.generatedAudioMessage.messageType, 'download-request'),
         ),
       )
-      .orderBy(desc(generatedAudioMessage.createdAt));
+      .orderBy(desc(schema.generatedAudioMessage.createdAt));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -1291,8 +1453,9 @@ export async function markAsDownloaded({
   downloadFormat: string;
   downloadMetadata?: any;
 }) {
+  const schema = getSchema();
   try {
-    return await db.insert(generatedAudioMessage).values({
+    return await db.insert(schema.generatedAudioMessage).values({
       generatedAudioId,
       messageId,
       messageType: 'download-request',
@@ -1321,6 +1484,7 @@ export async function getProcessingPerformance({
   chatId: string;
   timeRange?: '7d' | '30d' | '90d';
 }) {
+  const schema = getSchema();
   try {
     const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
     const startDate = new Date();
@@ -1328,20 +1492,20 @@ export async function getProcessingPerformance({
 
     const performance = await db
       .select({
-        date: sql<string>`date(${generatedAudio.createdAt})`,
+        date: sql<string>`date(${schema.generatedAudio.createdAt})`,
         count: sql<number>`count(*)`,
-        avgProcessingTime: sql<number>`avg(${generatedAudio.totalProcessingTime})`,
-        totalProcessingTime: sql<number>`sum(${generatedAudio.totalProcessingTime})`,
+        avgProcessingTime: sql<number>`avg(${schema.generatedAudio.totalProcessingTime})`,
+        totalProcessingTime: sql<number>`sum(${schema.generatedAudio.totalProcessingTime})`,
       })
-      .from(generatedAudio)
+      .from(schema.generatedAudio)
       .where(
         and(
-          eq(generatedAudio.chatId, chatId),
-          gte(generatedAudio.createdAt, startDate),
+          eq(schema.generatedAudio.chatId, chatId),
+          gte(schema.generatedAudio.createdAt, startDate),
         ),
       )
-      .groupBy(sql`date(${generatedAudio.createdAt})`)
-      .orderBy(sql`date(${generatedAudio.createdAt})`);
+      .groupBy(sql`date(${schema.generatedAudio.createdAt})`)
+      .orderBy(sql`date(${schema.generatedAudio.createdAt})`);
 
     return performance;
   } catch (error) {
@@ -1356,17 +1520,18 @@ export async function getProcessingPerformance({
  * Get storage usage statistics
  */
 export async function getStorageUsage({ chatId }: { chatId: string }) {
+  const schema = getSchema();
   try {
     const usage = await db
       .select({
         totalFiles: sql<number>`count(*)`,
-        totalSize: sql<number>`sum((${generatedAudio.metadata}->>'fileSize')::bigint)`,
-        avgFileSize: sql<number>`avg((${generatedAudio.metadata}->>'fileSize')::bigint)`,
-        oldestFile: sql<Date>`min(${generatedAudio.createdAt})`,
-        newestFile: sql<Date>`max(${generatedAudio.createdAt})`,
+        totalSize: sql<number>`sum((${schema.generatedAudio.metadata}->>'fileSize')::bigint)`,
+        avgFileSize: sql<number>`avg((${schema.generatedAudio.metadata}->>'fileSize')::bigint)`,
+        oldestFile: sql<Date>`min(${schema.generatedAudio.createdAt})`,
+        newestFile: sql<Date>`max(${schema.generatedAudio.createdAt})`,
       })
-      .from(generatedAudio)
-      .where(eq(generatedAudio.chatId, chatId));
+      .from(schema.generatedAudio)
+      .where(eq(schema.generatedAudio.chatId, chatId));
 
     return (
       usage[0] || {
