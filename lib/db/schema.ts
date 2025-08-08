@@ -207,3 +207,51 @@ export const audioContextMessage = pgTable('AudioContextMessage', {
 });
 
 export type AudioContextMessage = InferSelectModel<typeof audioContextMessage>;
+
+export const generatedAudio = pgTable('GeneratedAudio', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  chatId: uuid('chatId')
+    .notNull()
+    .references(() => chat.id),
+  originalAudioId: uuid('originalAudioId').notNull(),
+  originalAudioName: text('originalAudioName').notNull(),
+  originalAudioUrl: text('originalAudioUrl').notNull(),
+  generatedAudioName: text('generatedAudioName').notNull(),
+  generatedAudioUrl: text('generatedAudioUrl').notNull(),
+  processingType: varchar('processingType', {
+    enum: [
+      'enhancement',
+      'transcription',
+      'translation',
+      'noise-reduction',
+      'format-conversion',
+    ],
+  }).notNull(),
+  processingSteps: json('processingSteps').notNull(), // Array of processing step objects
+  totalProcessingTime: integer('totalProcessingTime').notNull(), // Duration in seconds
+  qualityMetrics: json('qualityMetrics'), // Quality metrics like SNR, clarity, fidelity
+  metadata: json('metadata').notNull(), // Technical metadata like format, bitrate, etc.
+  createdAt: timestamp('createdAt').notNull(),
+  updatedAt: timestamp('updatedAt').notNull(),
+});
+
+export type GeneratedAudio = InferSelectModel<typeof generatedAudio>;
+
+export const generatedAudioMessage = pgTable('GeneratedAudioMessage', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  generatedAudioId: uuid('generatedAudioId')
+    .notNull()
+    .references(() => generatedAudio.id),
+  messageId: uuid('messageId')
+    .notNull()
+    .references(() => message.id),
+  messageType: varchar('messageType', {
+    enum: ['generation-request', 'generation-complete', 'download-request'],
+  }).notNull(),
+  metadata: json('metadata'), // Additional message metadata
+  createdAt: timestamp('createdAt').notNull(),
+});
+
+export type GeneratedAudioMessage = InferSelectModel<
+  typeof generatedAudioMessage
+>;

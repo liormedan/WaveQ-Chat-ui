@@ -31,6 +31,10 @@ import {
   audioContextMessage,
   type AudioContext,
   type AudioContextMessage,
+  generatedAudio,
+  generatedAudioMessage,
+  type GeneratedAudio,
+  type GeneratedAudioMessage,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -711,6 +715,183 @@ export async function getAudioContextMessagesByMessageId({
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get audio context messages by message id',
+    );
+  }
+}
+
+// Generated Audio Queries
+export async function saveGeneratedAudio({
+  chatId,
+  originalAudioId,
+  originalAudioName,
+  originalAudioUrl,
+  generatedAudioName,
+  generatedAudioUrl,
+  processingType,
+  processingSteps,
+  totalProcessingTime,
+  qualityMetrics,
+  metadata,
+}: {
+  chatId: string;
+  originalAudioId: string;
+  originalAudioName: string;
+  originalAudioUrl: string;
+  generatedAudioName: string;
+  generatedAudioUrl: string;
+  processingType: 'enhancement' | 'transcription' | 'translation' | 'noise-reduction' | 'format-conversion';
+  processingSteps: any[];
+  totalProcessingTime: number;
+  qualityMetrics?: any;
+  metadata: any;
+}) {
+  try {
+    const now = new Date();
+    return await db.insert(generatedAudio).values({
+      chatId,
+      originalAudioId,
+      originalAudioName,
+      originalAudioUrl,
+      generatedAudioName,
+      generatedAudioUrl,
+      processingType,
+      processingSteps,
+      totalProcessingTime,
+      qualityMetrics,
+      metadata,
+      createdAt: now,
+      updatedAt: now,
+    });
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to save generated audio',
+    );
+  }
+}
+
+export async function getGeneratedAudiosByChatId({ chatId }: { chatId: string }) {
+  try {
+    return await db
+      .select()
+      .from(generatedAudio)
+      .where(eq(generatedAudio.chatId, chatId))
+      .orderBy(desc(generatedAudio.createdAt));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get generated audios by chat id',
+    );
+  }
+}
+
+export async function getGeneratedAudioById({ id }: { id: string }) {
+  try {
+    const result = await db
+      .select()
+      .from(generatedAudio)
+      .where(eq(generatedAudio.id, id));
+    return result[0] || null;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get generated audio by id',
+    );
+  }
+}
+
+export async function updateGeneratedAudio({
+  id,
+  processingSteps,
+  totalProcessingTime,
+  qualityMetrics,
+  metadata,
+}: {
+  id: string;
+  processingSteps?: any[];
+  totalProcessingTime?: number;
+  qualityMetrics?: any;
+  metadata?: any;
+}) {
+  try {
+    return await db
+      .update(generatedAudio)
+      .set({
+        processingSteps,
+        totalProcessingTime,
+        qualityMetrics,
+        metadata,
+        updatedAt: new Date(),
+      })
+      .where(eq(generatedAudio.id, id));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update generated audio',
+    );
+  }
+}
+
+export async function saveGeneratedAudioMessage({
+  generatedAudioId,
+  messageId,
+  messageType,
+  metadata,
+}: {
+  generatedAudioId: string;
+  messageId: string;
+  messageType: 'generation-request' | 'generation-complete' | 'download-request';
+  metadata?: any;
+}) {
+  try {
+    return await db.insert(generatedAudioMessage).values({
+      generatedAudioId,
+      messageId,
+      messageType,
+      metadata,
+      createdAt: new Date(),
+    });
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to save generated audio message',
+    );
+  }
+}
+
+export async function getGeneratedAudioMessagesByAudioId({
+  generatedAudioId,
+}: {
+  generatedAudioId: string;
+}) {
+  try {
+    return await db
+      .select()
+      .from(generatedAudioMessage)
+      .where(eq(generatedAudioMessage.generatedAudioId, generatedAudioId))
+      .orderBy(asc(generatedAudioMessage.createdAt));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get generated audio messages by audio id',
+    );
+  }
+}
+
+export async function getGeneratedAudioMessagesByMessageId({
+  messageId,
+}: {
+  messageId: string;
+}) {
+  try {
+    return await db
+      .select()
+      .from(generatedAudioMessage)
+      .where(eq(generatedAudioMessage.messageId, messageId));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get generated audio messages by message id',
     );
   }
 }

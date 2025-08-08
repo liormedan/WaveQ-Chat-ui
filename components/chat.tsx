@@ -24,6 +24,7 @@ import type { Attachment, ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
 import { AudioContextDisplay } from './audio-context-display';
 import { useAudioContext } from '@/hooks/use-audio-context';
+import { ProcessingStatusPanel } from './processing-status-panel';
 
 export function Chat({
   id,
@@ -195,6 +196,13 @@ export function Chat({
         votes={votes}
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
+      />
+
+      {/* Processing Status Panel */}
+      <ProcessingStatusPanel
+        autoHide={true}
+        autoHideDelay={10000}
+        showCompleted={false}
       />
     </>
   );

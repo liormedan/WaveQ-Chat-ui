@@ -165,6 +165,7 @@ export async function POST(request: Request) {
         await processAudioContext({
           audioContextId: audioContext.id,
           audioFileUrl: audioFile.url,
+          audioFileName: audioFile.name,
         });
 
         audioContexts.push(audioContext);

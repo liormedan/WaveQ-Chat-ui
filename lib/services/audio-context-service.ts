@@ -9,6 +9,7 @@ import {
 } from '@/lib/db/queries';
 import { myProvider } from '@/lib/ai/providers';
 import { generateText } from 'ai';
+import { processingStatusService } from './processing-status-service';
 
 export interface AudioFileInfo {
   id: string;
@@ -75,21 +76,113 @@ export async function createAudioContext({
 export async function processAudioContext({
   audioContextId,
   audioFileUrl,
+  audioFileName,
 }: {
   audioContextId: string;
   audioFileUrl: string;
+  audioFileName?: string;
 }) {
+  // Create processing status
+  const statusId = processingStatusService.createStatus({
+    type: 'audio-processing',
+    steps: [
+      {
+        id: generateUUID(),
+        name: 'Upload audio file',
+        status: 'completed',
+        estimatedDuration: 5,
+      },
+      {
+        id: generateUUID(),
+        name: 'Validate audio format',
+        status: 'completed',
+        estimatedDuration: 2,
+      },
+      {
+        id: generateUUID(),
+        name: 'Transcribe audio content',
+        status: 'pending',
+        estimatedDuration: 30,
+      },
+      {
+        id: generateUUID(),
+        name: 'Analyze audio features',
+        status: 'pending',
+        estimatedDuration: 15,
+      },
+      {
+        id: generateUUID(),
+        name: 'Generate context summary',
+        status: 'pending',
+        estimatedDuration: 10,
+      },
+    ],
+    canCancel: true,
+    canRetry: true,
+    canPause: false,
+    metadata: { audioFileName },
+  });
+
   try {
     // In a real implementation, you would:
     // 1. Download the audio file
     // 2. Use a speech-to-text service (e.g., OpenAI Whisper, Google Speech-to-Text)
     // 3. Analyze the audio content for sentiment, topics, etc.
     // 4. Generate waveform data
-    
-    // For now, we'll simulate this process
+
+    // Update status to running
+    processingStatusService.updateStatus(statusId, {
+      id: statusId,
+      status: 'running',
+    });
+
+    // Get step IDs for updates
+    const steps = processingStatusService.getStatus(statusId)?.steps || [];
+    const transcriptionStepId = steps[2]?.id; // Transcribe audio content
+    const analysisStepId = steps[3]?.id; // Analyze audio features
+    const summaryStepId = steps[4]?.id; // Generate context summary
+
+    // Step 1: Transcribe audio content
+    if (transcriptionStepId) {
+      processingStatusService.updateStep(statusId, transcriptionStepId, {
+        status: 'running',
+      });
+    }
     const mockTranscription = await generateMockTranscription(audioFileUrl);
-    const mockSummary = await generateAudioSummary(mockTranscription);
+    if (transcriptionStepId) {
+      processingStatusService.updateStep(statusId, transcriptionStepId, {
+        status: 'completed',
+        progress: 100,
+      });
+    }
+
+    // Step 2: Analyze audio features
+    if (analysisStepId) {
+      processingStatusService.updateStep(statusId, analysisStepId, {
+        status: 'running',
+      });
+    }
     const mockMetadata = await generateAudioMetadata(mockTranscription);
+    if (analysisStepId) {
+      processingStatusService.updateStep(statusId, analysisStepId, {
+        status: 'completed',
+        progress: 100,
+      });
+    }
+
+    // Step 3: Generate context summary
+    if (summaryStepId) {
+      processingStatusService.updateStep(statusId, summaryStepId, {
+        status: 'running',
+      });
+    }
+    const mockSummary = await generateAudioSummary(mockTranscription);
+    if (summaryStepId) {
+      processingStatusService.updateStep(statusId, summaryStepId, {
+        status: 'completed',
+        progress: 100,
+      });
+    }
 
     // Update the audio context with processed data
     await updateAudioContext({
@@ -97,6 +190,13 @@ export async function processAudioContext({
       audioTranscription: mockTranscription,
       contextSummary: mockSummary,
       audioMetadata: mockMetadata,
+    });
+
+    // Mark processing as completed
+    processingStatusService.updateStatus(statusId, {
+      id: statusId,
+      status: 'completed',
+      overallProgress: 100,
     });
 
     return {
@@ -183,7 +283,7 @@ export async function generateAudioAwareResponse({
   try {
     // Build context from audio files
     const audioContext = buildAudioContextString(audioContexts);
-    
+
     // Generate response using AI with audio context
     const { text: response } = await generateText({
       model: myProvider.languageModel('chat-model'),
@@ -201,7 +301,7 @@ export async function generateAudioAwareResponse({
       prompt: `User message: ${userMessage}
       
       Recent chat history:
-      ${chatHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')}
+      ${chatHistory.map((msg) => `${msg.role}: ${msg.content}`).join('\n')}
       
       Please provide a helpful response that takes into account the audio context.`,
     });
@@ -250,11 +350,13 @@ function buildAudioContextString(audioContexts: any[]): string {
 /**
  * Mock transcription generation (replace with real STT service)
  */
-async function generateMockTranscription(audioFileUrl: string): Promise<string> {
+async function generateMockTranscription(
+  audioFileUrl: string,
+): Promise<string> {
   // In a real implementation, you would use a speech-to-text service
   // For now, we'll return a mock transcription based on the file name
   const fileName = audioFileUrl.split('/').pop() || '';
-  
+
   if (fileName.includes('music')) {
     return 'This appears to be a musical composition with various instruments playing in harmony.';
   } else if (fileName.includes('speech')) {
@@ -273,7 +375,8 @@ async function generateAudioSummary(transcription: string): Promise<string> {
   try {
     const { text: summary } = await generateText({
       model: myProvider.languageModel('chat-model'),
-      system: 'You are an AI that creates concise summaries of audio content. Provide a brief, informative summary.',
+      system:
+        'You are an AI that creates concise summaries of audio content. Provide a brief, informative summary.',
       prompt: `Please summarize this audio transcription: ${transcription}`,
     });
 
@@ -291,7 +394,8 @@ async function generateAudioMetadata(transcription: string): Promise<any> {
   try {
     const { text: metadataText } = await generateText({
       model: myProvider.languageModel('chat-model'),
-      system: 'You are an AI that analyzes audio content and extracts metadata. Return a JSON object with topics, sentiment, and keywords.',
+      system:
+        'You are an AI that analyzes audio content and extracts metadata. Return a JSON object with topics, sentiment, and keywords.',
       prompt: `Analyze this audio transcription and return metadata as JSON:
       Transcription: ${transcription}
       

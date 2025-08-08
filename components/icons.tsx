@@ -1248,3 +1248,130 @@ export const MuteIcon = ({ size = 16 }: { size?: number }) => {
     </svg>
   );
 };
+
+export const XIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        d="M4 4L12 12M12 4L4 12"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
+export const RefreshIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        d="M1 8C1 4.13401 4.13401 1 8 1C11.866 1 15 4.13401 15 8C15 11.866 11.866 15 8 15C4.13401 15 1 11.866 1 8Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M8 5V8L10 10"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
+export const ClockIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        d="M8 1C4.13401 1 1 4.13401 1 8C1 11.866 4.13401 15 8 15C11.866 15 15 11.866 15 8C15 4.13401 11.866 1 8 1Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M8 4V8L10.5 10.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
+export const ChevronDownIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        d="M4 6L8 10L12 6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
+export const ChevronUpIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        d="M4 10L8 6L12 10"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
+export const CompareIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        d="M2 2H6V6H2V2ZM10 2H14V6H10V2ZM2 10H6V14H2V10ZM10 10H14V14H10V10ZM3 3V5H5V3H3ZM11 3V5H13V3H11ZM3 11V13H5V11H3ZM11 11V13H13V11H11Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};

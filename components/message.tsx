@@ -24,6 +24,8 @@ import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
+import { GeneratedAudioDisplay } from './generated-audio-display';
+import { useGeneratedAudios } from '@/hooks/use-generated-audios';
 
 // Type narrowing is handled by TypeScript's control flow analysis
 // The AI SDK provides proper discriminated unions for tool calls
@@ -60,6 +62,9 @@ const PurePreviewMessage = ({
   const nonAudioAttachments = attachmentsFromMessage.filter(
     (attachment) => !attachment.mediaType?.startsWith('audio/'),
   );
+
+  // Get generated audios for this chat
+  const { generatedAudios } = useGeneratedAudios({ chatId });
 
   // Determine message status based on content and processing state
   const getMessageStatus = (): MessageStatus => {
@@ -186,6 +191,31 @@ const PurePreviewMessage = ({
                         })}
                       >
                         <Markdown>{sanitizeText(part.text)}</Markdown>
+
+                        {/* Generated Audio Display */}
+                        {message.role === 'assistant' &&
+                          generatedAudios.length > 0 && (
+                            <div className="space-y-3">
+                              {generatedAudios.map((generatedAudio) => (
+                                <GeneratedAudioDisplay
+                                  key={generatedAudio.id}
+                                  generatedAudio={generatedAudio}
+                                  onDownload={(audioId, format) => {
+                                    // Mock download functionality
+                                    console.log(
+                                      `Downloading audio ${audioId} in ${format} format`,
+                                    );
+                                  }}
+                                  onCompare={(originalId, generatedId) => {
+                                    // Mock comparison functionality
+                                    console.log(
+                                      `Comparing audio ${originalId} with ${generatedId}`,
+                                    );
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          )}
                       </div>
                     </div>
                   );
