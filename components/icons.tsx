@@ -1355,3 +1355,115 @@ export const CompareIcon = ({ size = 16 }: { size?: number }) => {
     </svg>
   );
 };
+export const CheckCircleIcon = ({ size = 16 }: { size?: number }) => (
+  <svg
+    height={size}
+    strokeLinejoin="round"
+    viewBox="0 0 16 16"
+    width={size}
+    style={{ color: 'currentcolor' }}
+  >
+    <path
+      d="M8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0ZM11.7071 6.70711L7.70711 10.7071C7.31658 11.0976 6.68342 11.0976 6.29289 10.7071L4.29289 8.70711C3.90237 8.31658 3.90237 7.68342 4.29289 7.29289C4.68342 6.90237 5.31658 6.90237 5.70711 7.29289L7 8.58579L10.2929 5.29289C10.6834 4.90237 11.3166 4.90237 11.7071 5.29289C12.0976 5.68342 12.0976 6.31658 11.7071 6.70711Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+export const AlertCircleIcon = ({ size = 16 }: { size?: number }) => (
+  <svg
+    height={size}
+    strokeLinejoin="round"
+    viewBox="0 0 16 16"
+    width={size}
+    style={{ color: 'currentcolor' }}
+  >
+    <path
+      d="M8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0ZM8 4C8.55228 4 9 4.44772 9 5V8C9 8.55228 8.55228 9 8 9C7.44772 9 7 8.55228 7 8V5C7 4.44772 7.44772 4 8 4ZM8 12C8.55228 12 9 11.5523 9 11C9 10.4477 8.55228 10 8 10C7.44772 10 7 10.4477 7 11C7 11.5523 7.44772 12 8 12Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+export const ArchiveIcon = ({ size = 16 }: { size?: number }) => (
+  <svg
+    height={size}
+    strokeLinejoin="round"
+    viewBox="0 0 16 16"
+    width={size}
+    style={{ color: 'currentcolor' }}
+  >
+    <path
+      d="M1 2C1 1.44772 1.44772 1 2 1H14C14.5523 1 15 1.44772 15 2V4C15 4.55228 14.5523 5 14 5H13V13C13 14.1046 12.1046 15 11 15H5C3.89543 15 3 14.1046 3 13V5H2C1.44772 5 1 4.55228 1 4V2ZM3 2.5V3.5H13V2.5H3ZM4.5 5V13C4.5 13.2761 4.72386 13.5 5 13.5H11C11.2761 13.5 11.5 13.2761 11.5 13V5H4.5ZM6.5 7.5C6.5 7.22386 6.72386 7 7 7H9C9.27614 7 9.5 7.22386 9.5 7.5C9.5 7.77614 9.27614 8 9 8H7C6.72386 8 6.5 7.77614 6.5 7.5Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+export const CheckIcon = ({ size = 16 }: { size?: number }) => (
+  <svg
+    height={size}
+    strokeLinejoin="round"
+    viewBox="0 0 16 16"
+    width={size}
+    style={{ color: 'currentcolor' }}
+  >
+    <path
+      d="M13.7071 4.29289C14.0976 4.68342 14.0976 5.31658 13.7071 5.70711L7.70711 11.7071C7.31658 12.0976 6.68342 12.0976 6.29289 11.7071L2.29289 7.70711C1.90237 7.31658 1.90237 6.68342 2.29289 6.29289C2.68342 5.90237 3.31658 5.90237 3.70711 6.29289L7 9.58579L12.2929 4.29289C12.6834 3.90237 13.3166 3.90237 13.7071 4.29289Z"
+      fill="currentColor"
+    />
+  </svg>
+);export 
+const SettingsIcon = ({ size = 16 }: { size?: number }) => (
+  <svg
+    height={size}
+    strokeLinejoin="round"
+    viewBox="0 0 16 16"
+    width={size}
+    style={{ color: 'currentcolor' }}
+  >
+    <path
+      d="M8 10C9.10457 10 10 9.10457 10 8C10 6.89543 9.10457 6 8 6C6.89543 6 6 6.89543 6 8C6 9.10457 6.89543 10 8 10Z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+    <path
+      d="M12.9 8.8C12.8 9.1 12.6 9.3 12.3 9.4L11.6 9.7C11.5 10.1 11.3 10.4 11.1 10.7L11.3 11.4C11.4 11.7 11.3 12 11.1 12.2L10.2 13.1C10 13.3 9.7 13.4 9.4 13.3L8.7 13.1C8.4 13.3 8.1 13.5 7.7 13.6L7.4 14.3C7.3 14.6 7.1 14.8 6.8 14.9L5.2 14.9C4.9 14.8 4.7 14.6 4.6 14.3L4.3 13.6C3.9 13.5 3.6 13.3 3.3 13.1L2.6 13.3C2.3 13.4 2 13.3 1.8 13.1L0.9 12.2C0.7 12 0.6 11.7 0.7 11.4L0.9 10.7C0.7 10.4 0.5 10.1 0.4 9.7L-0.3 9.4C-0.6 9.3 -0.8 9.1 -0.9 8.8L-0.9 7.2C-0.8 6.9 -0.6 6.7 -0.3 6.6L0.4 6.3C0.5 5.9 0.7 5.6 0.9 5.3L0.7 4.6C0.6 4.3 0.7 4 0.9 3.8L1.8 2.9C2 2.7 2.3 2.6 2.6 2.7L3.3 2.9C3.6 2.7 3.9 2.5 4.3 2.4L4.6 1.7C4.7 1.4 4.9 1.2 5.2 1.1L6.8 1.1C7.1 1.2 7.3 1.4 7.4 1.7L7.7 2.4C8.1 2.5 8.4 2.7 8.7 2.9L9.4 2.7C9.7 2.6 10 2.7 10.2 2.9L11.1 3.8C11.3 4 11.4 4.3 11.3 4.6L11.1 5.3C11.3 5.6 11.5 5.9 11.6 6.3L12.3 6.6C12.6 6.7 12.8 6.9 12.9 7.2V8.8Z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+  </svg>
+);
+
+export const ExportIcon = ({ size = 16 }: { size?: number }) => (
+  <svg
+    height={size}
+    strokeLinejoin="round"
+    viewBox="0 0 16 16"
+    width={size}
+    style={{ color: 'currentcolor' }}
+  >
+    <path
+      d="M8 1V11M8 1L4 5M8 1L12 5"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+    <path
+      d="M1 11V13C1 13.5523 1.44772 14 2 14H14C14.5523 14 15 13.5523 15 13V11"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+  </svg>
+);

@@ -49,9 +49,34 @@ import { ChatSDKError } from '../errors';
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
 
-// biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+// Database connection with fallback for development
+let client: any;
+let db: any;
+
+try {
+  if (
+    process.env.POSTGRES_URL &&
+    process.env.POSTGRES_URL !== 'your-postgres-url-here' &&
+    process.env.POSTGRES_URL !== 'postgresql://user:password@host:port/database'
+  ) {
+    client = postgres(process.env.POSTGRES_URL);
+    db = drizzle(client);
+  } else {
+    // Fallback for development - use SQLite
+    console.warn(
+      '⚠️  No valid POSTGRES_URL found. Using SQLite database for development.',
+    );
+    const { db: sqliteDb, initializeDatabase } = await import('./sqlite');
+    initializeDatabase();
+    db = sqliteDb;
+  }
+} catch (error) {
+  console.error('❌ Database connection failed:', error);
+  // Final fallback - use SQLite
+  const { db: sqliteDb, initializeDatabase } = await import('./sqlite');
+  initializeDatabase();
+  db = sqliteDb;
+}
 
 export async function getUser(email: string): Promise<Array<User>> {
   try {

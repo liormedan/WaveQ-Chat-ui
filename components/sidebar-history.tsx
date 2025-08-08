@@ -26,8 +26,15 @@ import type { Chat, ChatWithAudioContext } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 import { ChatItem } from './sidebar-history-item';
 import { LoaderIcon } from './icons';
-import { useAudioChatHistory } from '@/hooks/use-audio-chat-history';
+import {
+  useAudioChatHistory,
+  getChatHistoryPaginationKey,
+  type ChatHistory,
+} from '@/hooks/use-audio-chat-history';
 import { AudioSummary } from './audio-summary';
+
+// Re-export for other components
+export { getChatHistoryPaginationKey, type ChatHistory };
 
 type GroupedChats = {
   today: Array<Chat | ChatWithAudioContext>;
