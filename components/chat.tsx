@@ -22,6 +22,8 @@ import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
 import type { Attachment, ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
+import { AudioContextDisplay } from './audio-context-display';
+import { useAudioContext } from '@/hooks/use-audio-context';
 
 export function Chat({
   id,
@@ -119,6 +121,10 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
+  // Get audio contexts for this chat
+  const { audioContexts, isLoading: audioContextsLoading } =
+    useAudioContext(id);
+
   useAutoResume({
     autoResume,
     initialMessages,
@@ -136,6 +142,13 @@ export function Chat({
           isReadonly={isReadonly}
           session={session}
         />
+
+        {/* Audio Context Display */}
+        {audioContexts.length > 0 && (
+          <div className="border-b bg-muted/30 px-4 py-3">
+            <AudioContextDisplay audioContexts={audioContexts} />
+          </div>
+        )}
 
         <Messages
           chatId={id}

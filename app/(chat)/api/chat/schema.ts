@@ -7,7 +7,17 @@ const textPartSchema = z.object({
 
 const filePartSchema = z.object({
   type: z.enum(['file']),
-  mediaType: z.enum(['image/jpeg', 'image/png']),
+  mediaType: z.enum([
+    'image/jpeg',
+    'image/png',
+    'audio/mpeg',
+    'audio/mp3',
+    'audio/wav',
+    'audio/ogg',
+    'audio/m4a',
+    'audio/aac',
+    'audio/webm',
+  ]),
   name: z.string().min(1).max(100),
   url: z.string().url(),
 });

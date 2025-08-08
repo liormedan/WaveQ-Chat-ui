@@ -27,6 +27,10 @@ import {
   type DBMessage,
   type Chat,
   stream,
+  audioContext,
+  audioContextMessage,
+  type AudioContext,
+  type AudioContextMessage,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -533,6 +537,180 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get stream ids by chat id',
+    );
+  }
+}
+
+// Audio Context Queries
+export async function saveAudioContext({
+  chatId,
+  audioFileId,
+  audioFileName,
+  audioFileUrl,
+  audioFileType,
+  audioFileSize,
+  audioDuration,
+  audioTranscription,
+  audioMetadata,
+  contextSummary,
+}: {
+  chatId: string;
+  audioFileId: string;
+  audioFileName: string;
+  audioFileUrl: string;
+  audioFileType: string;
+  audioFileSize?: number;
+  audioDuration?: number;
+  audioTranscription?: string;
+  audioMetadata?: any;
+  contextSummary?: string;
+}) {
+  try {
+    const now = new Date();
+    return await db.insert(audioContext).values({
+      chatId,
+      audioFileId,
+      audioFileName,
+      audioFileUrl,
+      audioFileType,
+      audioFileSize,
+      audioDuration,
+      audioTranscription,
+      audioMetadata,
+      contextSummary,
+      createdAt: now,
+      updatedAt: now,
+    });
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to save audio context',
+    );
+  }
+}
+
+export async function getAudioContextsByChatId({ chatId }: { chatId: string }) {
+  try {
+    return await db
+      .select()
+      .from(audioContext)
+      .where(eq(audioContext.chatId, chatId))
+      .orderBy(desc(audioContext.createdAt));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get audio contexts by chat id',
+    );
+  }
+}
+
+export async function getAudioContextById({ id }: { id: string }) {
+  try {
+    const [context] = await db
+      .select()
+      .from(audioContext)
+      .where(eq(audioContext.id, id));
+    return context;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get audio context by id',
+    );
+  }
+}
+
+export async function updateAudioContext({
+  id,
+  audioTranscription,
+  contextSummary,
+  audioMetadata,
+}: {
+  id: string;
+  audioTranscription?: string;
+  contextSummary?: string;
+  audioMetadata?: any;
+}) {
+  try {
+    return await db
+      .update(audioContext)
+      .set({
+        audioTranscription,
+        contextSummary,
+        audioMetadata,
+        updatedAt: new Date(),
+      })
+      .where(eq(audioContext.id, id));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update audio context',
+    );
+  }
+}
+
+export async function saveAudioContextMessage({
+  audioContextId,
+  messageId,
+  timestamp,
+  contextType,
+  contextData,
+}: {
+  audioContextId: string;
+  messageId: string;
+  timestamp?: number;
+  contextType: 'reference' | 'analysis' | 'question' | 'response';
+  contextData?: any;
+}) {
+  try {
+    return await db.insert(audioContextMessage).values({
+      audioContextId,
+      messageId,
+      timestamp,
+      contextType,
+      contextData,
+      createdAt: new Date(),
+    });
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to save audio context message',
+    );
+  }
+}
+
+export async function getAudioContextMessagesByContextId({
+  audioContextId,
+}: {
+  audioContextId: string;
+}) {
+  try {
+    return await db
+      .select()
+      .from(audioContextMessage)
+      .where(eq(audioContextMessage.audioContextId, audioContextId))
+      .orderBy(asc(audioContextMessage.createdAt));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get audio context messages by context id',
+    );
+  }
+}
+
+export async function getAudioContextMessagesByMessageId({
+  messageId,
+}: {
+  messageId: string;
+}) {
+  try {
+    return await db
+      .select()
+      .from(audioContextMessage)
+      .where(eq(audioContextMessage.messageId, messageId));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get audio context messages by message id',
     );
   }
 }

@@ -37,6 +37,13 @@ import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
+import {
+  createAudioContext,
+  processAudioContext,
+  linkMessageToAudioContext,
+  getChatAudioContexts,
+  generateAudioAwareResponse,
+} from '@/lib/services/audio-context-service';
 
 export const maxDuration = 60;
 
@@ -133,6 +140,39 @@ export async function POST(request: Request) {
       country,
     };
 
+    // Process audio files in the message
+    const audioFiles = message.parts
+      .filter(
+        (part) => part.type === 'file' && part.mediaType?.startsWith('audio/'),
+      )
+      .map((part) => ({
+        id: generateUUID(),
+        name: (part as any).name || 'Audio File',
+        url: (part as any).url,
+        type: (part as any).mediaType || 'audio/mpeg',
+      }));
+
+    // Create audio contexts for new audio files
+    const audioContexts = [];
+    for (const audioFile of audioFiles) {
+      try {
+        const audioContext = await createAudioContext({
+          chatId: id,
+          audioFile,
+        });
+
+        // Process the audio context (transcription, analysis, etc.)
+        await processAudioContext({
+          audioContextId: audioContext.id,
+          audioFileUrl: audioFile.url,
+        });
+
+        audioContexts.push(audioContext);
+      } catch (error) {
+        console.error('Error processing audio context:', error);
+      }
+    }
+
     await saveMessages({
       messages: [
         {
@@ -146,48 +186,136 @@ export async function POST(request: Request) {
       ],
     });
 
+    // Link message to audio contexts
+    for (const audioContext of audioContexts) {
+      await linkMessageToAudioContext({
+        audioContextId: audioContext.id,
+        messageId: message.id,
+        contextType: 'reference',
+      });
+    }
+
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    // Get all audio contexts for this chat
+    const allAudioContexts = await getChatAudioContexts({ chatId: id });
+
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
-        const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
-          messages: convertToModelMessages(uiMessages),
-          stopWhen: stepCountIs(5),
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
+        // Check if we should use audio-aware response generation
+        const hasAudioContext = allAudioContexts.length > 0;
+        const userMessageText = message.parts
+          .filter((part) => part.type === 'text')
+          .map((part) => part.text)
+          .join(' ');
+
+        if (hasAudioContext && userMessageText.trim()) {
+          // Generate audio-aware response
+          generateAudioAwareResponse({
+            userMessage: userMessageText,
+            audioContexts: allAudioContexts,
+            chatHistory: uiMessages.map((msg) => ({
+              role: msg.role,
+              content: msg.parts
+                .filter((p) => p.type === 'text')
+                .map((p) => p.text)
+                .join(' '),
+            })),
+          })
+            .then(async (audioAwareResponse) => {
+              // Create a response message with audio context
+              const responseMessage = {
+                id: generateUUID(),
+                role: 'assistant' as const,
+                parts: [{ type: 'text' as const, text: audioAwareResponse }],
+              };
+
+              // Save the response message
+              await saveMessages({
+                messages: [
+                  {
+                    chatId: id,
+                    id: responseMessage.id,
+                    role: 'assistant',
+                    parts: responseMessage.parts,
+                    attachments: [],
+                    createdAt: new Date(),
+                  },
                 ],
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          tools: {
-            getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
+              });
+
+              // Link response to audio contexts
+              for (const audioContext of allAudioContexts) {
+                await linkMessageToAudioContext({
+                  audioContextId: audioContext.id,
+                  messageId: responseMessage.id,
+                  contextType: 'response',
+                });
+              }
+
+              // Send the response through the data stream
+              dataStream.write({
+                type: 'text-delta',
+                delta: audioAwareResponse,
+                id: responseMessage.id,
+              });
+              dataStream.write({ type: 'finish' });
+            })
+            .catch((error) => {
+              console.error('Error generating audio-aware response:', error);
+              // Fall back to regular response generation
+              generateRegularResponse();
+            });
+        } else {
+          // Use regular response generation
+          generateRegularResponse();
+        }
+
+        function generateRegularResponse() {
+          if (!session) {
+            console.error('No session available for tools');
+            return;
+          }
+
+          const result = streamText({
+            model: myProvider.languageModel(selectedChatModel),
+            system: systemPrompt({ selectedChatModel, requestHints }),
+            messages: convertToModelMessages(uiMessages),
+            stopWhen: stepCountIs(5),
+            experimental_activeTools:
+              selectedChatModel === 'chat-model-reasoning'
+                ? []
+                : [
+                    'getWeather',
+                    'createDocument',
+                    'updateDocument',
+                    'requestSuggestions',
+                  ],
+            experimental_transform: smoothStream({ chunking: 'word' }),
+            tools: {
+              getWeather,
+              createDocument: createDocument({ session, dataStream }),
+              updateDocument: updateDocument({ session, dataStream }),
+              requestSuggestions: requestSuggestions({
+                session,
+                dataStream,
+              }),
+            },
+            experimental_telemetry: {
+              isEnabled: isProductionEnvironment,
+              functionId: 'stream-text',
+            },
+          });
+
+          result.consumeStream();
+
+          dataStream.merge(
+            result.toUIMessageStream({
+              sendReasoning: true,
             }),
-          },
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: 'stream-text',
-          },
-        });
-
-        result.consumeStream();
-
-        dataStream.merge(
-          result.toUIMessageStream({
-            sendReasoning: true,
-          }),
-        );
+          );
+        }
       },
       generateId: generateUUID,
       onFinish: async ({ messages }) => {

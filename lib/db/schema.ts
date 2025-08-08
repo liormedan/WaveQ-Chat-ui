@@ -9,6 +9,7 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  integer,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -168,3 +169,41 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const audioContext = pgTable('AudioContext', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  chatId: uuid('chatId')
+    .notNull()
+    .references(() => chat.id),
+  audioFileId: uuid('audioFileId').notNull(),
+  audioFileName: text('audioFileName').notNull(),
+  audioFileUrl: text('audioFileUrl').notNull(),
+  audioFileType: varchar('audioFileType', { length: 50 }).notNull(),
+  audioFileSize: integer('audioFileSize'),
+  audioDuration: integer('audioDuration'), // Duration in seconds
+  audioTranscription: text('audioTranscription'), // Optional transcription
+  audioMetadata: json('audioMetadata'), // Additional metadata like waveform data, etc.
+  contextSummary: text('contextSummary'), // AI-generated summary of audio context
+  createdAt: timestamp('createdAt').notNull(),
+  updatedAt: timestamp('updatedAt').notNull(),
+});
+
+export type AudioContext = InferSelectModel<typeof audioContext>;
+
+export const audioContextMessage = pgTable('AudioContextMessage', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  audioContextId: uuid('audioContextId')
+    .notNull()
+    .references(() => audioContext.id),
+  messageId: uuid('messageId')
+    .notNull()
+    .references(() => message.id),
+  timestamp: integer('timestamp'), // Timestamp in the audio file (in seconds)
+  contextType: varchar('contextType', {
+    enum: ['reference', 'analysis', 'question', 'response'],
+  }).notNull(),
+  contextData: json('contextData'), // Additional context data
+  createdAt: timestamp('createdAt').notNull(),
+});
+
+export type AudioContextMessage = InferSelectModel<typeof audioContextMessage>;
