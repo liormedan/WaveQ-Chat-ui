@@ -11,6 +11,8 @@ import {
   inArray,
   lt,
   type SQL,
+  sql,
+  lte,
 } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
@@ -739,7 +741,12 @@ export async function saveGeneratedAudio({
   originalAudioUrl: string;
   generatedAudioName: string;
   generatedAudioUrl: string;
-  processingType: 'enhancement' | 'transcription' | 'translation' | 'noise-reduction' | 'format-conversion';
+  processingType:
+    | 'enhancement'
+    | 'transcription'
+    | 'translation'
+    | 'noise-reduction'
+    | 'format-conversion';
   processingSteps: any[];
   totalProcessingTime: number;
   qualityMetrics?: any;
@@ -770,7 +777,9 @@ export async function saveGeneratedAudio({
   }
 }
 
-export async function getGeneratedAudiosByChatId({ chatId }: { chatId: string }) {
+export async function getGeneratedAudiosByChatId({
+  chatId,
+}: { chatId: string }) {
   try {
     return await db
       .select()
@@ -840,7 +849,10 @@ export async function saveGeneratedAudioMessage({
 }: {
   generatedAudioId: string;
   messageId: string;
-  messageType: 'generation-request' | 'generation-complete' | 'download-request';
+  messageType:
+    | 'generation-request'
+    | 'generation-complete'
+    | 'download-request';
   metadata?: any;
 }) {
   try {
@@ -892,6 +904,339 @@ export async function getGeneratedAudioMessagesByMessageId({
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get generated audio messages by message id',
+    );
+  }
+}
+
+// Processing Results Management Queries
+
+/**
+ * Get processing history for a chat with pagination and filtering
+ */
+export async function getProcessingHistory({
+  chatId,
+  limit = 20,
+  offset = 0,
+  processingType,
+  dateRange,
+  status,
+}: {
+  chatId: string;
+  limit?: number;
+  offset?: number;
+  processingType?: string;
+  dateRange?: { start: Date; end: Date };
+  status?: 'completed' | 'error' | 'processing';
+}) {
+  try {
+    let query = db
+      .select()
+      .from(generatedAudio)
+      .where(eq(generatedAudio.chatId, chatId));
+
+    // Apply filters
+    if (processingType) {
+      query = query.where(eq(generatedAudio.processingType, processingType));
+    }
+
+    if (dateRange) {
+      query = query.where(
+        and(
+          gte(generatedAudio.createdAt, dateRange.start),
+          lte(generatedAudio.createdAt, dateRange.end),
+        ),
+      );
+    }
+
+    if (status) {
+      // For status filtering, we need to check the processing steps
+      // This is a simplified implementation - in practice, you might want to add a status column
+      if (status === 'completed') {
+        // Filter for completed processing (all steps completed)
+        query = query.where(
+          sql`${generatedAudio.processingSteps} @> '[{"status": "completed"}]'::jsonb`,
+        );
+      } else if (status === 'error') {
+        // Filter for error status
+        query = query.where(
+          sql`${generatedAudio.processingSteps} @> '[{"status": "error"}]'::jsonb`,
+        );
+      }
+    }
+
+    const results = await query
+      .orderBy(desc(generatedAudio.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    // Get total count for pagination
+    const countQuery = db
+      .select({ count: sql<number>`count(*)` })
+      .from(generatedAudio)
+      .where(eq(generatedAudio.chatId, chatId));
+
+    const countResult = await countQuery;
+    const totalCount = countResult[0]?.count || 0;
+
+    return {
+      results,
+      totalCount,
+      hasMore: offset + limit < totalCount,
+    };
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get processing history',
+    );
+  }
+}
+
+/**
+ * Get processing statistics for a chat
+ */
+export async function getProcessingStats({ chatId }: { chatId: string }) {
+  try {
+    const stats = await db
+      .select({
+        totalProcessed: sql<number>`count(*)`,
+        totalProcessingTime: sql<number>`sum(${generatedAudio.totalProcessingTime})`,
+        averageProcessingTime: sql<number>`avg(${generatedAudio.totalProcessingTime})`,
+        processingTypes: sql<string>`json_agg(distinct ${generatedAudio.processingType})`,
+        recentActivity: sql<number>`count(*) filter (where ${generatedAudio.createdAt} > now() - interval '7 days')`,
+      })
+      .from(generatedAudio)
+      .where(eq(generatedAudio.chatId, chatId));
+
+    const typeStats = await db
+      .select({
+        processingType: generatedAudio.processingType,
+        count: sql<number>`count(*)`,
+        avgTime: sql<number>`avg(${generatedAudio.totalProcessingTime})`,
+      })
+      .from(generatedAudio)
+      .where(eq(generatedAudio.chatId, chatId))
+      .groupBy(generatedAudio.processingType);
+
+    return {
+      overall: stats[0] || {
+        totalProcessed: 0,
+        totalProcessingTime: 0,
+        averageProcessingTime: 0,
+        processingTypes: [],
+        recentActivity: 0,
+      },
+      byType: typeStats,
+    };
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get processing statistics',
+    );
+  }
+}
+
+/**
+ * Clean up old generated audio files
+ */
+export async function cleanupOldGeneratedAudio({
+  chatId,
+  olderThanDays = 30,
+  keepCount = 10,
+}: {
+  chatId: string;
+  olderThanDays?: number;
+  keepCount?: number;
+}) {
+  try {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
+
+    // Get files to delete (older than cutoff date, but keep the most recent ones)
+    const filesToDelete = await db
+      .select({
+        id: generatedAudio.id,
+        generatedAudioUrl: generatedAudio.generatedAudioUrl,
+      })
+      .from(generatedAudio)
+      .where(
+        and(
+          eq(generatedAudio.chatId, chatId),
+          lt(generatedAudio.createdAt, cutoffDate),
+        ),
+      )
+      .orderBy(asc(generatedAudio.createdAt))
+      .limit(1000); // Safety limit
+
+    // Keep the most recent files
+    const recentFiles = await db
+      .select({ id: generatedAudio.id })
+      .from(generatedAudio)
+      .where(eq(generatedAudio.chatId, chatId))
+      .orderBy(desc(generatedAudio.createdAt))
+      .limit(keepCount);
+
+    const recentFileIds = new Set(recentFiles.map((f) => f.id));
+    const filesToActuallyDelete = filesToDelete.filter(
+      (f) => !recentFileIds.has(f.id),
+    );
+
+    if (filesToActuallyDelete.length === 0) {
+      return { deletedCount: 0, filesDeleted: [] };
+    }
+
+    const fileIds = filesToActuallyDelete.map((f) => f.id);
+
+    // Delete the files
+    await db.delete(generatedAudio).where(inArray(generatedAudio.id, fileIds));
+
+    // Delete associated messages
+    await db
+      .delete(generatedAudioMessage)
+      .where(inArray(generatedAudioMessage.generatedAudioId, fileIds));
+
+    return {
+      deletedCount: filesToActuallyDelete.length,
+      filesDeleted: filesToActuallyDelete,
+    };
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to cleanup old generated audio',
+    );
+  }
+}
+
+/**
+ * Get download history for a generated audio file
+ */
+export async function getDownloadHistory({
+  generatedAudioId,
+}: {
+  generatedAudioId: string;
+}) {
+  try {
+    return await db
+      .select()
+      .from(generatedAudioMessage)
+      .where(
+        and(
+          eq(generatedAudioMessage.generatedAudioId, generatedAudioId),
+          eq(generatedAudioMessage.messageType, 'download-request'),
+        ),
+      )
+      .orderBy(desc(generatedAudioMessage.createdAt));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get download history',
+    );
+  }
+}
+
+/**
+ * Mark a generated audio file as downloaded
+ */
+export async function markAsDownloaded({
+  generatedAudioId,
+  messageId,
+  downloadFormat,
+  downloadMetadata,
+}: {
+  generatedAudioId: string;
+  messageId: string;
+  downloadFormat: string;
+  downloadMetadata?: any;
+}) {
+  try {
+    return await db.insert(generatedAudioMessage).values({
+      generatedAudioId,
+      messageId,
+      messageType: 'download-request',
+      metadata: {
+        downloadFormat,
+        downloadTimestamp: new Date(),
+        ...downloadMetadata,
+      },
+      createdAt: new Date(),
+    });
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to mark as downloaded',
+    );
+  }
+}
+
+/**
+ * Get processing performance metrics
+ */
+export async function getProcessingPerformance({
+  chatId,
+  timeRange = '30d',
+}: {
+  chatId: string;
+  timeRange?: '7d' | '30d' | '90d';
+}) {
+  try {
+    const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const performance = await db
+      .select({
+        date: sql<string>`date(${generatedAudio.createdAt})`,
+        count: sql<number>`count(*)`,
+        avgProcessingTime: sql<number>`avg(${generatedAudio.totalProcessingTime})`,
+        totalProcessingTime: sql<number>`sum(${generatedAudio.totalProcessingTime})`,
+      })
+      .from(generatedAudio)
+      .where(
+        and(
+          eq(generatedAudio.chatId, chatId),
+          gte(generatedAudio.createdAt, startDate),
+        ),
+      )
+      .groupBy(sql`date(${generatedAudio.createdAt})`)
+      .orderBy(sql`date(${generatedAudio.createdAt})`);
+
+    return performance;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get processing performance',
+    );
+  }
+}
+
+/**
+ * Get storage usage statistics
+ */
+export async function getStorageUsage({ chatId }: { chatId: string }) {
+  try {
+    const usage = await db
+      .select({
+        totalFiles: sql<number>`count(*)`,
+        totalSize: sql<number>`sum((${generatedAudio.metadata}->>'fileSize')::bigint)`,
+        avgFileSize: sql<number>`avg((${generatedAudio.metadata}->>'fileSize')::bigint)`,
+        oldestFile: sql<Date>`min(${generatedAudio.createdAt})`,
+        newestFile: sql<Date>`max(${generatedAudio.createdAt})`,
+      })
+      .from(generatedAudio)
+      .where(eq(generatedAudio.chatId, chatId));
+
+    return (
+      usage[0] || {
+        totalFiles: 0,
+        totalSize: 0,
+        avgFileSize: 0,
+        oldestFile: null,
+        newestFile: null,
+      }
+    );
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get storage usage',
     );
   }
 }

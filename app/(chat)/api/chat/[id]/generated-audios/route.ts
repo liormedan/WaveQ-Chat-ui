@@ -1,37 +1,47 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authConfig } from '@/app/(auth)/auth.config';
 import { getGeneratedAudiosForChat } from '@/lib/services/generated-audio-service';
+import {
+  withErrorHandling,
+  createAuthErrorHandler,
+  createValidationErrorHandler,
+} from '@/lib/error-handling/api-middleware';
+import { handleSDKError } from '@/lib/error-handling';
 
-export async function GET(
+// Enhanced GET handler with error handling
+const getGeneratedAudiosHandler = async (
   request: NextRequest,
   { params }: { params: { id: string } },
-) {
-  try {
-    const session = await getServerSession(authConfig);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const chatId = params.id;
-    if (!chatId) {
-      return NextResponse.json(
-        { error: 'Chat ID is required' },
-        { status: 400 },
-      );
-    }
-
-    const generatedAudios = await getGeneratedAudiosForChat(chatId);
-
-    return NextResponse.json({
-      success: true,
-      generatedAudios,
-    });
-  } catch (error) {
-    console.error('Error getting generated audios:', error);
-    return NextResponse.json(
-      { error: 'Failed to get generated audios' },
-      { status: 500 },
-    );
+) => {
+  const session = await getServerSession(authConfig);
+  if (!session?.user?.id) {
+    throw new Error('Authentication required');
   }
-}
+
+  const chatId = params.id;
+  if (!chatId) {
+    throw new Error('Chat ID is required');
+  }
+
+  const generatedAudios = await getGeneratedAudiosForChat(chatId);
+
+  return NextResponse.json({
+    success: true,
+    generatedAudios,
+  });
+};
+
+// Export the wrapped handler with error handling
+export const GET = withErrorHandling(getGeneratedAudiosHandler, {
+  customErrorHandler: (error, context) => {
+    if (error instanceof Error && error.message === 'Authentication required') {
+      return createAuthErrorHandler()(error, context);
+    }
+    if (error instanceof Error && error.message === 'Chat ID is required') {
+      return createValidationErrorHandler('chatId')(error, context);
+    }
+    return null; // Use default error handling
+  },
+});
