@@ -8,6 +8,11 @@ import { PencilEditIcon, SparklesIcon } from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
+import { AudioPlayer } from './audio-player';
+import {
+  MessageStatusIndicator,
+  type MessageStatus,
+} from './message-status-indicator';
 import { Weather } from './weather';
 import equal from 'fast-deep-equal';
 import { cn, sanitizeText } from '@/lib/utils';
@@ -48,6 +53,26 @@ const PurePreviewMessage = ({
     (part) => part.type === 'file',
   );
 
+  const audioAttachments = attachmentsFromMessage.filter((attachment) =>
+    attachment.mediaType?.startsWith('audio/'),
+  );
+
+  const nonAudioAttachments = attachmentsFromMessage.filter(
+    (attachment) => !attachment.mediaType?.startsWith('audio/'),
+  );
+
+  // Determine message status based on content and processing state
+  const getMessageStatus = (): MessageStatus => {
+    if (isLoading) return 'processing';
+    if (
+      message.role === 'assistant' &&
+      message.parts.some((part) => part.type === 'reasoning')
+    ) {
+      return 'completed';
+    }
+    return 'idle';
+  };
+
   useDataStream();
 
   return (
@@ -81,12 +106,30 @@ const PurePreviewMessage = ({
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
             })}
           >
-            {attachmentsFromMessage.length > 0 && (
+            {/* Audio Attachments */}
+            {audioAttachments.length > 0 && (
+              <div
+                data-testid={`message-audio-attachments`}
+                className="flex flex-col gap-3"
+              >
+                {audioAttachments.map((attachment) => (
+                  <AudioPlayer
+                    key={attachment.url}
+                    src={attachment.url}
+                    title={attachment.filename ?? 'Audio File'}
+                    className="max-w-md"
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Non-Audio Attachments */}
+            {nonAudioAttachments.length > 0 && (
               <div
                 data-testid={`message-attachments`}
                 className="flex flex-row justify-end gap-2"
               >
-                {attachmentsFromMessage.map((attachment) => (
+                {nonAudioAttachments.map((attachment) => (
                   <PreviewAttachment
                     key={attachment.url}
                     attachment={{
@@ -308,6 +351,12 @@ const PurePreviewMessage = ({
                 }
               }
             })}
+
+            {/* Message Status Indicator */}
+            <MessageStatusIndicator
+              status={getMessageStatus()}
+              className="mt-2"
+            />
 
             {!isReadonly && (
               <MessageActions

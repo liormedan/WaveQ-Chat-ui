@@ -173,14 +173,53 @@ function PureMultimodalInput({
     }
   };
 
+  const validateFile = (file: File) => {
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    const allowedAudioTypes = [
+      'audio/mpeg',
+      'audio/mp3',
+      'audio/wav',
+      'audio/ogg',
+      'audio/m4a',
+      'audio/aac',
+      'audio/webm',
+    ];
+
+    if (file.size > maxSize) {
+      toast.error('File size must be less than 50MB');
+      return false;
+    }
+
+    if (
+      file.type.startsWith('audio/') &&
+      !allowedAudioTypes.includes(file.type)
+    ) {
+      toast.error(
+        'Unsupported audio format. Please use MP3, WAV, OGG, M4A, AAC, or WebM',
+      );
+      return false;
+    }
+
+    return true;
+  };
+
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files || []);
 
-      setUploadQueue(files.map((file) => file.name));
+      // Validate files before uploading
+      const validFiles = files.filter(validateFile);
+
+      if (validFiles.length !== files.length) {
+        // Some files were invalid, don't proceed with upload
+        event.target.value = '';
+        return;
+      }
+
+      setUploadQueue(validFiles.map((file) => file.name));
 
       try {
-        const uploadPromises = files.map((file) => uploadFile(file));
+        const uploadPromises = validFiles.map((file) => uploadFile(file));
         const uploadedAttachments = await Promise.all(uploadPromises);
         const successfullyUploadedAttachments = uploadedAttachments.filter(
           (attachment) => attachment !== undefined,
@@ -194,6 +233,7 @@ function PureMultimodalInput({
         console.error('Error uploading files!', error);
       } finally {
         setUploadQueue([]);
+        event.target.value = '';
       }
     },
     [setAttachments],

@@ -1172,3 +1172,79 @@ export const WarningIcon = ({ size = 16 }: { size?: number }) => {
     </svg>
   );
 };
+
+export const AudioIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M8 0C6.89543 0 6 0.895431 6 2V6C6 7.10457 6.89543 8 8 8C9.10457 8 10 7.10457 10 6V2C10 0.895431 9.10457 0 8 0ZM4.5 6C4.5 4.067 6.067 2.5 8 2.5C9.933 2.5 11.5 4.067 11.5 6C11.5 7.933 9.933 9.5 8 9.5C6.067 9.5 4.5 7.933 4.5 6ZM8 11C5.23858 11 3 13.2386 3 16H13C13 13.2386 10.7614 11 8 11Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
+export const PauseIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M6 2H4C3.44772 2 3 2.44772 3 3V13C3 13.5523 3.44772 14 4 14H6C6.55228 14 7 13.5523 7 13V3C7 2.44772 6.55228 2 6 2ZM12 2H10C9.44772 2 9 2.44772 9 3V13C9 13.5523 9.44772 14 10 14H12C12.5523 14 13 13.5523 13 13V3C13 2.44772 12.5523 2 12 2Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
+export const VolumeIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M8.5 2.5L4.5 6.5H2C1.44772 6.5 1 6.94772 1 7.5V8.5C1 9.05228 1.44772 9.5 2 9.5H4.5L8.5 13.5V2.5ZM10.5 7.5C10.5 6.11929 11.6193 5 13 5C14.3807 5 15.5 6.11929 15.5 7.5C15.5 8.88071 14.3807 10 13 10C11.6193 10 10.5 8.88071 10.5 7.5ZM13 6.5C12.1716 6.5 11.5 6.94772 11.5 7.5C11.5 8.05228 12.1716 8.5 13 8.5C13.8284 8.5 14.5 8.05228 14.5 7.5C14.5 6.94772 13.8284 6.5 13 6.5Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
+export const MuteIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M8.5 2.5L4.5 6.5H2C1.44772 6.5 1 6.94772 1 7.5V8.5C1 9.05228 1.44772 9.5 2 9.5H4.5L8.5 13.5V2.5ZM12.5 4.5L11.5 5.5L13.5 7.5L14.5 6.5L12.5 4.5ZM11.5 9.5L12.5 10.5L14.5 8.5L13.5 7.5L11.5 9.5Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
