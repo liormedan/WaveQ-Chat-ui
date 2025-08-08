@@ -1319,26 +1319,6 @@ export const ClockIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const ChevronDownIcon = ({ size = 16 }: { size?: number }) => {
-  return (
-    <svg
-      height={size}
-      strokeLinejoin="round"
-      viewBox="0 0 16 16"
-      width={size}
-      style={{ color: 'currentcolor' }}
-    >
-      <path
-        d="M4 6L8 10L12 6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-};
-
 export const ChevronUpIcon = ({ size = 16 }: { size?: number }) => {
   return (
     <svg
