@@ -31,20 +31,27 @@ export async function fetchWithErrorHandlers(
   init?: RequestInit,
 ) {
   try {
-    const response = await fetch(input, init);
-
-    if (!response.ok) {
-      const { code, cause } = await response.json();
-      throw new ChatSDKError(code as ErrorCode, cause);
-    }
-
-    return response;
+    // Use network recovery fetch if available
+    const { networkRecoveryFetch } = await import('./network-recovery');
+    return await networkRecoveryFetch.fetch(input, init);
   } catch (error: unknown) {
-    if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      throw new ChatSDKError('offline:chat');
-    }
+    // Fallback to original implementation
+    try {
+      const response = await fetch(input, init);
 
-    throw error;
+      if (!response.ok) {
+        const { code, cause } = await response.json();
+        throw new ChatSDKError(code as ErrorCode, cause);
+      }
+
+      return response;
+    } catch (fallbackError: unknown) {
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        throw new ChatSDKError('offline:chat');
+      }
+
+      throw fallbackError;
+    }
   }
 }
 
