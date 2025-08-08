@@ -6,7 +6,7 @@ import { useWindowSize } from 'usehooks-ts';
 import { ModelSelector } from '@/components/model-selector';
 import { SidebarToggle } from '@/components/sidebar-toggle';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, VercelIcon } from './icons';
+import { PlusIcon, VercelIcon, SettingsIcon } from './icons';
 import { useSidebar } from './ui/sidebar';
 import { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
@@ -78,6 +78,21 @@ function PureChatHeader({
         generatedAudios={[]}
         className="order-4 md:ml-auto"
       />
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className="order-5"
+            onClick={() => router.push('/settings')}
+          >
+            <SettingsIcon size={16} />
+            <span className="sr-only">הגדרות</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>הגדרות</TooltipContent>
+      </Tooltip>
     </header>
   );
 }

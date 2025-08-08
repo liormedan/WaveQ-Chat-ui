@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authConfig } from '@/app/(auth)/auth.config';
 
 // Health check response types
 interface HealthCheckResponse {

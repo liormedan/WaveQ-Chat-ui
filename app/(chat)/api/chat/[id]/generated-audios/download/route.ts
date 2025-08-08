@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authConfig } from '@/app/(auth)/auth.config';
+import { auth } from '@/app/(auth)/auth';
 import { getGeneratedAudio } from '@/lib/services/generated-audio-service';
 import {
   validateFileIntegrity,
@@ -13,7 +12,7 @@ export async function POST(
   { params }: { params: { id: string } },
 ) {
   try {
-    const session = await getServerSession(authConfig);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -120,7 +119,7 @@ export async function GET(
 ) {
   return withErrorHandling(
     async () => {
-      const session = await getServerSession(authConfig);
+      const session = await auth();
       if (!session?.user?.id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }

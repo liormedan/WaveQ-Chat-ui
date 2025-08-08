@@ -68,9 +68,8 @@ export function withErrorHandling(
       // Add user information if available
       if (finalConfig.includeUserInfo) {
         try {
-          const { getServerSession } = await import('next-auth');
-          const { authConfig } = await import('@/app/(auth)/auth.config');
-          const session = await getServerSession(authConfig);
+          const { auth } = await import('@/app/(auth)/auth');
+          const session = await auth();
           if (session?.user?.id) {
             errorContext.userId = session.user.id;
           }
@@ -114,9 +113,8 @@ export function withErrorHandling(
       // Add user information if available
       if (finalConfig.includeUserInfo) {
         try {
-          const { getServerSession } = await import('next-auth');
-          const { authConfig } = await import('@/app/(auth)/auth.config');
-          const session = await getServerSession(authConfig);
+          const { auth } = await import('@/app/(auth)/auth');
+          const session = await auth();
           if (session?.user?.id) {
             errorContext.userId = session.user.id;
           }
