@@ -26,6 +26,7 @@ import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
 import { GeneratedAudioDisplay } from './generated-audio-display';
+import { GeneratedAudioGallery } from './generated-audio-gallery';
 import { useGeneratedAudios } from '@/hooks/use-generated-audios';
 import { useAudioProcessingStatus } from '@/hooks/use-audio-processing-status';
 
@@ -294,26 +295,20 @@ const PurePreviewMessage = ({
                         {/* Generated Audio Display */}
                         {message.role === 'assistant' &&
                           generatedAudios.length > 0 && (
-                            <div className="space-y-3">
-                              {generatedAudios.map((generatedAudio) => (
-                                <GeneratedAudioDisplay
-                                  key={generatedAudio.id}
-                                  generatedAudio={generatedAudio}
-                                  onDownload={(audioId, format) => {
-                                    // Mock download functionality
-                                    console.log(
-                                      `Downloading audio ${audioId} in ${format} format`,
-                                    );
-                                  }}
-                                  onCompare={(originalId, generatedId) => {
-                                    // Mock comparison functionality
-                                    console.log(
-                                      `Comparing audio ${originalId} with ${generatedId}`,
-                                    );
-                                  }}
-                                />
-                              ))}
-                            </div>
+                            <GeneratedAudioGallery
+                              generatedAudios={generatedAudios}
+                              chatId={chatId}
+                              onDownloadAll={() => {
+                                // Handle download all functionality
+                                console.log('Download all generated audios for chat:', chatId);
+                              }}
+                              onDownloadComplete={(downloadInfo) => {
+                                console.log('Download completed:', downloadInfo);
+                              }}
+                              onDownloadError={(error) => {
+                                console.error('Download error:', error);
+                              }}
+                            />
                           )}
                       </div>
                     </div>

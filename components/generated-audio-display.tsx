@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AudioPlayer } from './audio-player';
+import { AudioPlayerWithControls } from './audio-player-with-controls';
+import { AudioComparisonView } from './audio-comparison-view';
+import { ProcessingDetailsPanel } from './processing-details-panel';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -177,181 +180,66 @@ export const GeneratedAudioDisplay: React.FC<GeneratedAudioDisplayProps> = ({
             <span>{formatFileSize(generatedAudio.metadata.fileSize)}</span>
           </div>
 
-          <AudioPlayer
+          <AudioPlayerWithControls
             src={generatedAudio.generatedAudioUrl}
             title={generatedAudio.generatedAudioName}
             className="w-full"
+            showControls={true}
+            showWaveform={true}
+            metadata={{
+              format: generatedAudio.metadata.format,
+              duration: generatedAudio.metadata.duration,
+              fileSize: generatedAudio.metadata.fileSize,
+              bitrate: generatedAudio.metadata.bitrate,
+            }}
+            onDownload={() => {
+              // Handle download functionality
+              if (onDownload) {
+                onDownload(generatedAudio.id, generatedAudio.metadata.format);
+              }
+            }}
+            onShare={() => {
+              // Handle share functionality
+              console.log('Share generated audio:', generatedAudio.id);
+            }}
           />
         </div>
 
         {/* Comparison View */}
         {showComparison && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="space-y-3 border-t pt-4"
-          >
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>Original Audio</span>
-              <span>•</span>
-              <span>{generatedAudio.originalAudioName}</span>
-            </div>
-
-            <AudioPlayer
-              src={generatedAudio.originalAudioUrl}
-              title={generatedAudio.originalAudioName}
-              className="w-full"
-            />
-          </motion.div>
+          <AudioComparisonView
+            originalAudio={{
+              url: generatedAudio.originalAudioUrl,
+              name: generatedAudio.originalAudioName,
+              metadata: {
+                format: 'audio', // Would be determined from actual metadata
+                duration: undefined,
+                fileSize: undefined,
+                bitrate: undefined,
+              },
+            }}
+            generatedAudio={{
+              url: generatedAudio.generatedAudioUrl,
+              name: generatedAudio.generatedAudioName,
+              metadata: generatedAudio.metadata,
+            }}
+            processingType={generatedAudio.processingDetails.processingType}
+            qualityMetrics={generatedAudio.processingDetails.qualityMetrics}
+            onClose={() => setShowComparison(false)}
+          />
         )}
 
         {/* Processing Details */}
         {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="space-y-4 border-t pt-4"
-          >
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium flex items-center gap-2">
-                <ClockIcon size={14} />
-                Processing Details
-              </h4>
-
-              {/* Processing Steps */}
-              <div className="space-y-2">
-                {generatedAudio.processingDetails.processingSteps.map(
-                  (step) => (
-                    <div
-                      key={step.id}
-                      className="flex items-center gap-3 text-xs"
-                    >
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        {step.status === 'completed' && (
-                          <CheckCircleIcon
-                            size={12}
-                          />
-                        )}
-                        {step.status === 'running' && (
-                          <div className="animate-spin rounded-full h-3 w-3 border-2 border-current border-t-transparent" />
-                        )}
-                        {step.status === 'error' && (
-                          <div className="h-3 w-3 rounded-full bg-red-500" />
-                        )}
-                        <span className="truncate">{step.name}</span>
-                      </div>
-                      <span className="text-muted-foreground">
-                        {step.duration}s
-                      </span>
-                    </div>
-                  ),
-                )}
-              </div>
-
-              {/* Quality Metrics */}
-              {generatedAudio.processingDetails.qualityMetrics && (
-                <div className="space-y-2">
-                  <h5 className="text-xs font-medium">Quality Metrics</h5>
-                  <div className="grid grid-cols-3 gap-2">
-                    {generatedAudio.processingDetails.qualityMetrics
-                      .signalToNoiseRatio && (
-                      <div className="text-center">
-                        <div className="text-xs font-medium">SNR</div>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            'text-xs',
-                            getQualityColor(
-                              generatedAudio.processingDetails.qualityMetrics
-                                .signalToNoiseRatio,
-                            ),
-                          )}
-                        >
-                          {generatedAudio.processingDetails.qualityMetrics.signalToNoiseRatio.toFixed(
-                            1,
-                          )}{' '}
-                          dB
-                        </Badge>
-                      </div>
-                    )}
-                    {generatedAudio.processingDetails.qualityMetrics
-                      .clarityScore && (
-                      <div className="text-center">
-                        <div className="text-xs font-medium">Clarity</div>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            'text-xs',
-                            getQualityColor(
-                              generatedAudio.processingDetails.qualityMetrics
-                                .clarityScore,
-                            ),
-                          )}
-                        >
-                          {generatedAudio.processingDetails.qualityMetrics.clarityScore.toFixed(
-                            1,
-                          )}
-                          /10
-                        </Badge>
-                      </div>
-                    )}
-                    {generatedAudio.processingDetails.qualityMetrics
-                      .fidelityScore && (
-                      <div className="text-center">
-                        <div className="text-xs font-medium">Fidelity</div>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            'text-xs',
-                            getQualityColor(
-                              generatedAudio.processingDetails.qualityMetrics
-                                .fidelityScore,
-                            ),
-                          )}
-                        >
-                          {generatedAudio.processingDetails.qualityMetrics.fidelityScore.toFixed(
-                            1,
-                          )}
-                          /10
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Technical Metadata */}
-              <div className="space-y-2">
-                <h5 className="text-xs font-medium">Technical Details</h5>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-muted-foreground">Format:</span>
-                    <span className="ml-1 font-medium">
-                      {generatedAudio.metadata.format.toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Bitrate:</span>
-                    <span className="ml-1 font-medium">
-                      {generatedAudio.metadata.bitrate} kbps
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Sample Rate:</span>
-                    <span className="ml-1 font-medium">
-                      {generatedAudio.metadata.sampleRate} Hz
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Channels:</span>
-                    <span className="ml-1 font-medium">
-                      {generatedAudio.metadata.channels}
-                    </span>
-                  </div>
-                </div>
-              </div>
+          <ProcessingDetailsPanel
+            processingType={generatedAudio.processingDetails.processingType}
+            processingSteps={generatedAudio.processingDetails.processingSteps}
+            totalProcessingTime={generatedAudio.processingDetails.totalProcessingTime}
+            qualityMetrics={generatedAudio.processingDetails.qualityMetrics}
+            isActive={false}
+            className="border-0 shadow-none"
+          />
+        )}
 
               {/* Download Options */}
               {chatId && showDownloadOptions && (

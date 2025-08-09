@@ -305,7 +305,7 @@ export function ProcessingHistoryManager({
             onClick={() => fetchHistory(true)}
             disabled={isLoading}
           >
-            <RefreshIcon size={16} className="mr-2" />
+            <RefreshIcon size={16} />
             Refresh
           </Button>
           <Button
@@ -313,7 +313,7 @@ export function ProcessingHistoryManager({
             size="sm"
             onClick={() => setShowCleanupModal(true)}
           >
-            <TrashIcon size={16} className="mr-2" />
+            <TrashIcon size={16} />
             Cleanup
           </Button>
         </div>
