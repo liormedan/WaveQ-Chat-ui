@@ -1,10 +1,10 @@
-<a href="https://chat.vercel.ai/">
-  <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
-  <h1 align="center">Chat SDK</h1>
-</a>
+<div align="center">
+  <h1>🎵 WaveQ Chat</h1>
+  <p>An AI-powered chat application with audio processing capabilities</p>
+</div>
 
 <p align="center">
-    Chat SDK is a free, open-source template built with Next.js and the AI SDK that helps you quickly build powerful chatbot applications.
+    WaveQ Chat is a modern, feature-rich chat application built with Next.js, featuring a beautiful purple-themed UI and advanced audio processing capabilities.
 </p>
 
 <p align="center">
@@ -44,19 +44,44 @@ You can deploy your own version of the Next.js AI Chatbot to Vercel with one cli
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fai-chatbot&env=AUTH_SECRET&envDescription=Learn+more+about+how+to+get+the+API+Keys+for+the+application&envLink=https%3A%2F%2Fgithub.com%2Fvercel%2Fai-chatbot%2Fblob%2Fmain%2F.env.example&demo-title=AI+Chatbot&demo-description=An+Open-Source+AI+Chatbot+Template+Built+With+Next.js+and+the+AI+SDK+by+Vercel.&demo-url=https%3A%2F%2Fchat.vercel.ai&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22ai%22%2C%22productSlug%22%3A%22grok%22%2C%22integrationSlug%22%3A%22xai%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22upstash-kv%22%2C%22integrationSlug%22%3A%22upstash%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D)
 
-## Running locally
+## 🚀 Running locally
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
+### Prerequisites
+- Node.js 18+ 
+- npm or pnpm
 
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various AI and authentication provider accounts.
+### Environment Setup
 
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+1. **Copy the environment file:**
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. **Generate AUTH_SECRET:**
+   ```bash
+   # Generate a secure random secret
+   openssl rand -base64 32
+   # Or visit: https://generate-secret.vercel.app/32
+   ```
+
+3. **Update `.env.local` with your values:**
+   ```env
+   AUTH_SECRET=your-generated-secret-here
+   # Add other API keys as needed for full functionality
+   ```
+
+> ⚠️ **Security Note**: Never commit your `.env.local` file or expose real secrets in your code!
+
+### Installation & Development
 
 ```bash
-pnpm install
-pnpm dev
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
 ```
+
+The application will be available at `http://localhost:3000`
 
 Your app template should now be running on [localhost:3000](http://localhost:3000).
