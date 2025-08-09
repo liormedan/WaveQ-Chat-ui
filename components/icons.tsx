@@ -1668,3 +1668,29 @@ export const CalendarIcon = ({ size = 16 }: { size?: number }) => (
     />
   </svg>
 );
+export const WaveformIcon = ({ size = 16 }: { size?: number }) => (
+  <svg
+    height={size}
+    strokeLinejoin="round"
+    viewBox="0 0 16 16"
+    width={size}
+    style={{ color: 'currentcolor' }}
+  >
+    <path
+      d="M2 8V6M4 8V4M6 8V2M8 8V1M10 8V3M12 8V5M14 8V7"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+    <path
+      d="M2 8V10M4 8V12M6 8V14M8 8V15M10 8V13M12 8V11M14 8V9"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+  </svg>
+);

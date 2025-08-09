@@ -4,11 +4,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolCall, DocumentToolResult } from './document';
-import { PencilEditIcon, SparklesIcon } from './icons';
+import { PencilEditIcon, SparklesIcon, AudioIcon } from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { AudioPlayer } from './audio-player';
+import { AudioPlayerWithControls } from './audio-player-with-controls';
 import {
   MessageStatusIndicator,
   type MessageStatus,
@@ -26,6 +27,7 @@ import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
 import { GeneratedAudioDisplay } from './generated-audio-display';
 import { useGeneratedAudios } from '@/hooks/use-generated-audios';
+import { useAudioProcessingStatus } from '@/hooks/use-audio-processing-status';
 
 // Type narrowing is handled by TypeScript's control flow analysis
 // The AI SDK provides proper discriminated unions for tool calls
@@ -66,15 +68,49 @@ const PurePreviewMessage = ({
   // Get generated audios for this chat
   const { generatedAudios } = useGeneratedAudios({ chatId });
 
+  // Get audio processing status for this message
+  const { hasActiveProcessing, getStatusForAudio } = useAudioProcessingStatus(
+    message.id,
+  );
+
   // Determine message status based on content and processing state
   const getMessageStatus = (): MessageStatus => {
     if (isLoading) return 'processing';
+
+    // Check if message has audio attachments being processed
+    if (audioAttachments.length > 0) {
+      // For user messages with audio, check if any audio is being processed
+      if (message.role === 'user' && hasActiveProcessing) {
+        return 'processing';
+      }
+
+      // Check for any audio processing errors
+      const hasErrors = audioAttachments.some((attachment) => {
+        const status = getStatusForAudio(attachment.url);
+        return status?.status === 'error';
+      });
+
+      if (hasErrors) return 'error';
+
+      // If user message with audio and no active processing, it's completed
+      if (message.role === 'user') {
+        return 'completed';
+      }
+    }
+
+    // Check if assistant message has reasoning or generated content
     if (
       message.role === 'assistant' &&
       message.parts.some((part) => part.type === 'reasoning')
     ) {
       return 'completed';
     }
+
+    // Check if there are generated audios for this message
+    if (message.role === 'assistant' && generatedAudios.length > 0) {
+      return 'completed';
+    }
+
     return 'idle';
   };
 
@@ -117,14 +153,68 @@ const PurePreviewMessage = ({
                 data-testid={`message-audio-attachments`}
                 className="flex flex-col gap-3"
               >
-                {audioAttachments.map((attachment) => (
-                  <AudioPlayer
-                    key={attachment.url}
-                    src={attachment.url}
-                    title={attachment.filename ?? 'Audio File'}
-                    className="max-w-md"
-                  />
-                ))}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <AudioIcon size={12} />
+                  <span>
+                    {audioAttachments.length === 1
+                      ? 'Audio file attached'
+                      : `${audioAttachments.length} audio files attached`}
+                  </span>
+                </div>
+                {audioAttachments.map((attachment) => {
+                  const processingStatus = getStatusForAudio(attachment.url);
+                  return (
+                    <div key={attachment.url} className="space-y-2">
+                      <AudioPlayerWithControls
+                        src={attachment.url}
+                        title={attachment.filename ?? 'Audio File'}
+                        className="max-w-md"
+                        showControls={true}
+                        showWaveform={false}
+                        metadata={{
+                          format: attachment.mediaType?.split('/')[1] || 'audio',
+                          // These would be extracted from actual file metadata
+                          duration: undefined,
+                          fileSize: undefined,
+                          bitrate: undefined,
+                        }}
+                        onDownload={() => {
+                          // Handle download functionality
+                          console.log('Download audio:', attachment.url);
+                        }}
+                        onShare={() => {
+                          // Handle share functionality
+                          console.log('Share audio:', attachment.url);
+                        }}
+                      />
+                      {processingStatus &&
+                        processingStatus.status !== 'idle' && (
+                          <div className="text-xs text-muted-foreground flex items-center gap-2">
+                            {processingStatus.status === 'processing' && (
+                              <div className="animate-spin rounded-full h-3 w-3 border-2 border-current border-t-transparent" />
+                            )}
+                            <span>
+                              {processingStatus.status === 'uploading' &&
+                                'Uploading...'}
+                              {processingStatus.status === 'analyzing' &&
+                                'Analyzing audio...'}
+                              {processingStatus.status === 'processing' &&
+                                'Processing...'}
+                              {processingStatus.status === 'completed' &&
+                                'Processing completed'}
+                              {processingStatus.status === 'error' &&
+                                `Error: ${processingStatus.error}`}
+                            </span>
+                            {processingStatus.progress && (
+                              <span>
+                                ({Math.round(processingStatus.progress)}%)
+                              </span>
+                            )}
+                          </div>
+                        )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -191,6 +281,15 @@ const PurePreviewMessage = ({
                         })}
                       >
                         <Markdown>{sanitizeText(part.text)}</Markdown>
+
+                        {/* Audio context info for user messages */}
+                        {message.role === 'user' &&
+                          audioAttachments.length > 0 && (
+                            <div className="text-xs opacity-75 border-t border-primary-foreground/20 pt-2 mt-2">
+                              Audio files will be analyzed and processed by the
+                              AI assistant.
+                            </div>
+                          )}
 
                         {/* Generated Audio Display */}
                         {message.role === 'assistant' &&
@@ -385,6 +484,13 @@ const PurePreviewMessage = ({
             {/* Message Status Indicator */}
             <MessageStatusIndicator
               status={getMessageStatus()}
+              message={
+                audioAttachments.length > 0 && message.role === 'user'
+                  ? `Audio file${audioAttachments.length > 1 ? 's' : ''} ready for processing`
+                  : generatedAudios.length > 0 && message.role === 'assistant'
+                    ? `Generated ${generatedAudios.length} audio file${generatedAudios.length > 1 ? 's' : ''}`
+                    : undefined
+              }
               className="mt-2"
             />
 

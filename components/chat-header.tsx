@@ -12,6 +12,7 @@ import { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { type VisibilityType, VisibilitySelector } from './visibility-selector';
 import { AudioSettingsMenu } from './audio-settings-menu';
+import { NetworkStatusIndicator } from './network-status-indicator';
 import type { Session } from 'next-auth';
 
 function PureChatHeader({
@@ -79,12 +80,17 @@ function PureChatHeader({
         className="order-4 md:ml-auto"
       />
 
+      {/* Network Status Indicator */}
+      <div className="order-5 md:order-6">
+        <NetworkStatusIndicator variant="compact" />
+      </div>
+
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
             variant="outline"
             size="icon"
-            className="order-5"
+            className="order-6 md:order-7"
             onClick={() => router.push('/settings')}
           >
             <SettingsIcon size={16} />

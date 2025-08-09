@@ -25,6 +25,8 @@ import { useDataStream } from './data-stream-provider';
 import { AudioContextDisplay } from './audio-context-display';
 import { useAudioContext } from '@/hooks/use-audio-context';
 import { ProcessingStatusPanel } from './processing-status-panel';
+import { NetworkStatusIndicator } from '@/components/network-status-indicator';
+import { useNetworkRecovery } from '@/lib/network-recovery/use-network-recovery';
 
 export function Chat({
   id,
@@ -126,6 +128,8 @@ export function Chat({
   const { audioContexts, isLoading: audioContextsLoading } =
     useAudioContext(id);
 
+  const { isOnline, isOffline } = useNetworkRecovery();
+
   useAutoResume({
     autoResume,
     initialMessages,
@@ -136,6 +140,23 @@ export function Chat({
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
+        {/* Network Status Banner */}
+        {isOffline && (
+          <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-3">
+            <div className="flex items-center gap-3 max-w-7xl mx-auto">
+              <NetworkStatusIndicator variant="compact" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-yellow-800">
+                  אין חיבור לאינטרנט
+                </p>
+                <p className="text-xs text-yellow-700">
+                  חלק מהתכונות עשויות להיות זמינות במצב לא מקוון
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <ChatHeader
           chatId={id}
           selectedModelId={initialChatModel}

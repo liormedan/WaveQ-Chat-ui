@@ -20,7 +20,10 @@ import {
   CheckCircleIcon,
   AlertCircleIcon,
   InfoIcon,
+  WifiOffIcon,
 } from '@/components/icons';
+import { NetworkStatusIndicator } from '@/components/network-status-indicator';
+import { useNetworkRecovery } from '@/lib/network-recovery/use-network-recovery';
 import type { Session } from 'next-auth';
 
 interface SettingsPageProps {
@@ -35,6 +38,8 @@ export default function SettingsPage({ session }: SettingsPageProps) {
     'idle' | 'success' | 'error'
   >('idle');
   const [connectionMessage, setConnectionMessage] = useState('');
+  
+  const { isOnline, isOffline } = useNetworkRecovery();
 
   const userType = session.user.type;
 
@@ -65,33 +70,46 @@ export default function SettingsPage({ session }: SettingsPageProps) {
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
+      {/* Network Status Banner */}
+      {isOffline && (
+        <Alert className="mb-6 border-yellow-200 bg-yellow-50">
+          <WifiOffIcon size={16} />
+          <AlertDescription className="text-yellow-800">
+            <strong>אין חיבור לאינטרנט.</strong> אתה יכול להגדיר את מפתחות ה-API, אבל לא תוכל לבדוק את החיבור עד שתתחבר מחדש.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <SettingsIcon size={24} />
           <h1 className="text-3xl font-bold">הגדרות</h1>
         </div>
-        <Button
-          onClick={handleReturnToChat}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        <div className="flex items-center gap-4">
+          <NetworkStatusIndicator variant="compact" />
+          <Button
+            onClick={handleReturnToChat}
+            variant="outline"
+            className="flex items-center gap-2"
           >
-            <path
-              d="M10.5 3.5L5.5 8L10.5 12.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          חזרה לצ&apos;אט
-        </Button>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M10.5 3.5L5.5 8L10.5 12.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            חזרה לצ&apos;אט
+          </Button>
+        </div>
       </div>
 
       {/* API Configuration */}
@@ -119,12 +137,17 @@ export default function SettingsPage({ session }: SettingsPageProps) {
               />
               <Button
                 onClick={testApiConnection}
-                disabled={!apiKey || isTestingConnection}
+                disabled={!apiKey || isTestingConnection || isOffline}
                 variant="outline"
               >
                 {isTestingConnection ? 'בודק...' : 'בדוק חיבור'}
               </Button>
             </div>
+            {isOffline && (
+              <p className="text-sm text-yellow-600">
+                ⚠️ בדיקת החיבור זמינה רק כשיש חיבור לאינטרנט
+              </p>
+            )}
           </div>
 
           {connectionStatus !== 'idle' && (
