@@ -5,7 +5,7 @@ import { cleanupOldGeneratedAudio } from '@/lib/db/queries';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
@@ -13,7 +13,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const chatId = params.id;
+    const { id: chatId } = await params;
     if (!chatId) {
       return NextResponse.json(
         { error: 'Chat ID is required' },
@@ -49,8 +49,8 @@ export async function POST(
       const allFiles = await getGeneratedAudiosByChatId({ chatId });
 
       const filesToDelete = allFiles
-        .filter((file) => file.createdAt < cutoffDate)
-        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+        .filter((file: any) => file.createdAt < cutoffDate)
+        .sort((a: any, b: any) => a.createdAt.getTime() - b.createdAt.getTime())
         .slice(0, Math.max(0, allFiles.length - keepCount));
 
       return NextResponse.json({
@@ -58,7 +58,7 @@ export async function POST(
         dryRun: true,
         wouldDelete: {
           count: filesToDelete.length,
-          files: filesToDelete.map((f) => ({
+          files: filesToDelete.map((f: any) => ({
             id: f.id,
             name: f.generatedAudioName,
             createdAt: f.createdAt,

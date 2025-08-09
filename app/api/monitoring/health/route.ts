@@ -197,10 +197,10 @@ async function checkDatabase(): Promise<DatabaseCheck> {
 
   try {
     // Import database utilities
-    const { db } = await import('@/lib/db/schema');
+    const { db } = await import('@/lib/db/sqlite');
 
     // Simple query to test connectivity
-    const result = await db.execute('SELECT 1 as test');
+    const result = await db.run('SELECT 1 as test');
 
     const responseTime = Date.now() - startTime;
 

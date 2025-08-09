@@ -20,7 +20,7 @@ export const MessageStatusIndicator = ({
     switch (status) {
       case 'processing':
         return {
-          icon: <LoaderIcon size={14} className="animate-spin" />,
+          icon: <LoaderIcon size={14} />,
           text: message || 'Processing...',
           className: 'text-blue-600 dark:text-blue-400',
         };

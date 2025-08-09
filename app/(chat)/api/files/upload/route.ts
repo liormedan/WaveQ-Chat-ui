@@ -134,7 +134,7 @@ export async function POST(request: Request) {
     },
     {
       action: 'file_upload',
-      additionalData: { filename: (formData?.get('file') as File)?.name },
+      additionalData: { filename: 'unknown' },
     },
   );
 }

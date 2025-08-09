@@ -71,7 +71,7 @@ export function AudioSettingsMenu({
             onClick={() => setShowExportDialog(true)}
             className="cursor-pointer"
           >
-            <ExportIcon size={16} className="mr-2" />
+            <ExportIcon size={16} />
             Export Conversation
           </DropdownMenuItem>
 
@@ -79,7 +79,7 @@ export function AudioSettingsMenu({
             onClick={() => setShowArchiveDialog(true)}
             className="cursor-pointer"
           >
-            <ArchiveIcon size={16} className="mr-2" />
+            <ArchiveIcon size={16} />
             Create Archive
           </DropdownMenuItem>
 
@@ -90,13 +90,13 @@ export function AudioSettingsMenu({
               onClick={() => setShowBatchDownload(true)}
               className="cursor-pointer"
             >
-              <DownloadIcon size={16} className="mr-2" />
+              <DownloadIcon size={16} />
               Batch Download ({generatedAudios.length})
             </DropdownMenuItem>
           )}
 
           <DropdownMenuItem className="cursor-pointer">
-            <AudioIcon size={16} className="mr-2" />
+            <AudioIcon size={16} />
             Audio Settings
           </DropdownMenuItem>
         </DropdownMenuContent>

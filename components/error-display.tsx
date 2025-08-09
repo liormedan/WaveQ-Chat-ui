@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { AlertTriangleIcon, XIcon, RefreshIcon, InfoIcon } from './icons';
+import { AlertCircleIcon, XIcon, RefreshIcon, InfoIcon } from './icons';
 import { cn } from '@/lib/utils';
 import type { ErrorInfo } from '@/lib/error-handling';
 
@@ -32,15 +32,15 @@ const categoryIcons: Record<
   string,
   React.ComponentType<{ size?: number; className?: string }>
 > = {
-  authentication: AlertTriangleIcon,
-  authorization: AlertTriangleIcon,
+  authentication: AlertCircleIcon,
+  authorization: AlertCircleIcon,
   validation: InfoIcon,
-  database: AlertTriangleIcon,
-  network: AlertTriangleIcon,
-  file_processing: AlertTriangleIcon,
-  audio_processing: AlertTriangleIcon,
-  external_service: AlertTriangleIcon,
-  system: AlertTriangleIcon,
+  database: AlertCircleIcon,
+  network: AlertCircleIcon,
+  file_processing: AlertCircleIcon,
+  audio_processing: AlertCircleIcon,
+  external_service: AlertCircleIcon,
+  system: AlertCircleIcon,
   user_action: InfoIcon,
 };
 
@@ -52,7 +52,7 @@ export function ErrorDisplay({
   className,
   variant = 'card',
 }: ErrorDisplayProps) {
-  const IconComponent = categoryIcons[errorInfo.category] || AlertTriangleIcon;
+  const IconComponent = categoryIcons[errorInfo.category] || AlertCircleIcon;
   const severityColor =
     severityColors[errorInfo.severity] || severityColors.medium;
 
@@ -145,7 +145,7 @@ export function ErrorDisplay({
               onClick={onRetry}
               className="text-xs"
             >
-              <RefreshIcon size={14} className="mr-1" />
+              <RefreshIcon size={14} />
               Retry
             </Button>
           )}
@@ -228,7 +228,7 @@ export function ErrorBoundaryFallback({
       <Card className="max-w-md w-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <AlertTriangleIcon size={20} className="text-red-500" />
+                            <AlertCircleIcon size={20} />
             Something went wrong
           </CardTitle>
         </CardHeader>

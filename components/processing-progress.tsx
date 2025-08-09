@@ -94,7 +94,7 @@ export const ProcessingProgress: React.FC<ProcessingProgressProps> = ({
         };
       case 'running':
         return {
-          icon: <LoaderIcon size={16} className="animate-spin" />,
+          icon: <LoaderIcon size={16} />,
           text: 'Running',
           className: 'text-blue-600 dark:text-blue-400',
           message: 'Processing in progress...',
@@ -149,7 +149,7 @@ export const ProcessingProgress: React.FC<ProcessingProgressProps> = ({
       case 'pending':
         return <ClockIcon size={14} className="text-muted-foreground" />;
       case 'running':
-        return <LoaderIcon size={14} className="animate-spin text-blue-600" />;
+        return <LoaderIcon size={14} />;
       case 'completed':
         return <CheckCircleFillIcon size={14} className="text-green-600" />;
       case 'error':

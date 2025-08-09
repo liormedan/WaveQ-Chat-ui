@@ -226,7 +226,7 @@ export function ConversationExportArchive({
                   : 'border-transparent text-muted-foreground hover:text-foreground',
               )}
             >
-              <DownloadIcon size={14} className="inline mr-2" />
+              <DownloadIcon size={14} />
               Export
             </button>
             <button
@@ -242,7 +242,7 @@ export function ConversationExportArchive({
                   : 'border-transparent text-muted-foreground hover:text-foreground',
               )}
             >
-              <ArchiveIcon size={14} className="inline mr-2" />
+              <ArchiveIcon size={14} />
               Archive
             </button>
           </div>

@@ -1,22 +1,19 @@
-import type { NextRequest, NextResponse } from 'next/server';
-import {
-  errorHandler,
-  handleSDKError,
-  handleUnknownError,
-  type ErrorContext,
-} from './index';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { handleSDKError } from './index';
+import type { ErrorContext } from './index';
 import { ChatSDKError } from '../errors';
 
 // API route handler type
-export type APIHandler = (
+export type APIHandler<T = Record<string, string>> = (
   request: NextRequest,
-  context: { params: Record<string, string> },
+  context: { params: Promise<T> },
 ) => Promise<NextResponse>;
 
 // Enhanced API handler with error handling
-export type EnhancedAPIHandler = (
+export type EnhancedAPIHandler<T = Record<string, string>> = (
   request: NextRequest,
-  context: { params: Record<string, string> },
+  context: { params: Promise<T> },
 ) => Promise<NextResponse>;
 
 // Middleware configuration
@@ -25,7 +22,10 @@ export interface APIMiddlewareConfig {
   enableReporting?: boolean;
   includeRequestInfo?: boolean;
   includeUserInfo?: boolean;
-  customErrorHandler?: (error: unknown, context: ErrorContext) => NextResponse;
+  customErrorHandler?: (
+    error: unknown,
+    context: ErrorContext,
+  ) => NextResponse | undefined;
 }
 
 // Default configuration
@@ -39,20 +39,18 @@ const defaultConfig: APIMiddlewareConfig = {
 /**
  * Wraps an API handler with comprehensive error handling
  */
-export function withErrorHandling(
-  handler: APIHandler,
+export function withErrorHandling<T = Record<string, string>>(
+  handler: APIHandler<T>,
   config: APIMiddlewareConfig = {},
-): EnhancedAPIHandler {
+): EnhancedAPIHandler<T> {
   const finalConfig = { ...defaultConfig, ...config };
 
-  return async (
-    request: NextRequest,
-    context: { params: Record<string, string> },
-  ) => {
+  return async (request: NextRequest, context: { params: Promise<T> }) => {
     const startTime = Date.now();
 
     try {
       // Extract request information for error context
+      const params = await context.params;
       const errorContext: Partial<ErrorContext> = {
         timestamp: new Date(),
         userAgent: request.headers.get('user-agent') || undefined,
@@ -61,7 +59,7 @@ export function withErrorHandling(
         additionalData: {
           method: request.method,
           url: request.url,
-          params: context.params,
+          params: params as Record<string, string>,
         },
       };
 
@@ -124,11 +122,21 @@ export function withErrorHandling(
       }
 
       // Handle the error
-      const errorInfo = errorHandler.handleError(error, errorContext);
+      const errorInfo = handleSDKError(
+        'bad_request:api',
+        String(error),
+        errorContext,
+      );
 
       // Use custom error handler if provided
       if (finalConfig.customErrorHandler) {
-        return finalConfig.customErrorHandler(error, errorContext);
+        const customResponse = finalConfig.customErrorHandler(
+          error,
+          errorContext,
+        );
+        if (customResponse) {
+          return customResponse;
+        }
       }
 
       // Return appropriate error response

@@ -172,13 +172,13 @@ export function DownloadUtils({
   const getStatusIcon = () => {
     switch (downloadStatus) {
       case 'preparing':
-        return <LoaderIcon size={16} className="animate-spin" />;
+        return <LoaderIcon size={16} />;
       case 'downloading':
-        return <LoaderIcon size={16} className="animate-spin" />;
+        return <LoaderIcon size={16} />;
       case 'complete':
-        return <CheckCircleIcon size={16} className="text-green-500" />;
+        return <CheckCircleIcon size={16} />;
       case 'error':
-        return <AlertCircleIcon size={16} className="text-red-500" />;
+        return <AlertCircleIcon size={16} />;
       default:
         return <DownloadIcon size={16} />;
     }

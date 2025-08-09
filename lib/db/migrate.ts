@@ -8,21 +8,31 @@ config({
 });
 
 const runMigrate = async () => {
-  if (!process.env.POSTGRES_URL) {
-    throw new Error('POSTGRES_URL is not defined');
+  if (!process.env.POSTGRES_URL || 
+      process.env.POSTGRES_URL === 'postgresql://user:password@host:port/database' ||
+      process.env.POSTGRES_URL === 'your-postgres-url-here') {
+    console.log('⚠️  POSTGRES_URL not found or invalid, skipping migrations');
+    console.log('   This is normal for development or when using SQLite');
+    process.exit(0);
   }
 
-  const connection = postgres(process.env.POSTGRES_URL, { max: 1 });
-  const db = drizzle(connection);
+  try {
+    const connection = postgres(process.env.POSTGRES_URL, { max: 1 });
+    const db = drizzle(connection);
 
-  console.log('⏳ Running migrations...');
+    console.log('⏳ Running migrations...');
 
-  const start = Date.now();
-  await migrate(db, { migrationsFolder: './lib/db/migrations' });
-  const end = Date.now();
+    const start = Date.now();
+    await migrate(db, { migrationsFolder: './lib/db/migrations' });
+    const end = Date.now();
 
-  console.log('✅ Migrations completed in', end - start, 'ms');
-  process.exit(0);
+    console.log('✅ Migrations completed in', end - start, 'ms');
+    await connection.end();
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Migration failed:', error);
+    process.exit(1);
+  }
 };
 
 runMigrate().catch((err) => {

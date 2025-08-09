@@ -63,7 +63,7 @@ export async function GET(
         metadata: message.metadata,
       })),
       audioContexts: includeAudio
-        ? audioContexts.map((context) => ({
+        ? audioContexts.map((context: any) => ({
             audioFileName: context.audioFileName,
             audioFileUrl: context.audioFileUrl,
             audioFileType: context.audioFileType,

@@ -1,9 +1,31 @@
-import type { 
-    PythonRequest, 
-    PythonResponse, 
-    PythonEngineConfig 
-} from '../types/python';
-import { audioChatConfig } from '../config/audio-chat';
+// Simple types for Python engine client
+interface PythonRequest {
+    id: string;
+    type: string;
+    data?: any;
+}
+
+interface PythonResponse {
+    id: string;
+    status: 'success' | 'error';
+    data?: any;
+    error?: string;
+}
+
+interface PythonEngineConfig {
+    endpoint: string;
+    timeout: number;
+    retryAttempts: number;
+    retryDelay: number;
+}
+
+// Default configuration for Python engine
+const defaultConfig: PythonEngineConfig = {
+    endpoint: process.env.PYTHON_ENGINE_ENDPOINT || 'ws://localhost:8000',
+    timeout: Number.parseInt(process.env.PYTHON_ENGINE_TIMEOUT || '30000', 10),
+    retryAttempts: Number.parseInt(process.env.PYTHON_ENGINE_RETRY_ATTEMPTS || '3', 10),
+    retryDelay: Number.parseInt(process.env.PYTHON_ENGINE_RETRY_DELAY || '1000', 10),
+};
 
 export class PythonEngineClient {
     private ws: WebSocket | null = null;
@@ -16,7 +38,7 @@ export class PythonEngineClient {
 
     constructor(config?: Partial<PythonEngineConfig>) {
         this.config = {
-            ...audioChatConfig.pythonEngine,
+            ...defaultConfig,
             ...config
         };
     }

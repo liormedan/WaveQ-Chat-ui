@@ -90,7 +90,7 @@ export default function SettingsPage({ session }: SettingsPageProps) {
               strokeLinejoin="round"
             />
           </svg>
-          חזרה לצ'אט
+          חזרה לצ&apos;אט
         </Button>
       </div>
 
@@ -160,7 +160,7 @@ export default function SettingsPage({ session }: SettingsPageProps) {
               </li>
               <li>צור חשבון או התחבר לחשבון קיים</li>
               <li>עבור ל-API Keys בתפריט הצד</li>
-              <li>לחץ על "Create API Key"</li>
+              <li>לחץ על &quot;Create API Key&quot;</li>
               <li>העתק את המפתח ושמור אותו</li>
             </ol>
           </div>

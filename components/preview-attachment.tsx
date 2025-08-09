@@ -28,16 +28,16 @@ export const PreviewAttachment = ({
             />
           ) : isAudio ? (
             <div className="flex items-center justify-center size-full">
-              <AudioIcon size={24} className="text-muted-foreground" />
+              <AudioIcon size={24} />
             </div>
           ) : (
             <div className="flex items-center justify-center size-full">
-              <FileIcon size={24} className="text-muted-foreground" />
+              <FileIcon size={24} />
             </div>
           )
         ) : (
           <div className="flex items-center justify-center size-full">
-            <FileIcon size={24} className="text-muted-foreground" />
+            <FileIcon size={24} />
           </div>
         )}
 

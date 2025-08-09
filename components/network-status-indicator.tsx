@@ -88,7 +88,6 @@ export function NetworkStatusIndicator({
       <div className={cn('flex items-center gap-2', className)}>
         <IconComponent
           size={16}
-          className={cn('flex-shrink-0', config.color)}
         />
         <span className={cn('text-sm font-medium', config.color)}>
           {config.label}
@@ -119,7 +118,7 @@ export function NetworkStatusIndicator({
         >
           <div className="flex items-center justify-between max-w-7xl mx-auto">
             <div className="flex items-center gap-3">
-              <IconComponent size={20} className={config.color} />
+              <IconComponent size={20} />
               <div>
                 <p className={cn('font-medium', config.color)}>
                   {isOffline ? 'You are offline' : 'Network connection is slow'}
@@ -152,7 +151,7 @@ export function NetworkStatusIndicator({
     <Card className={cn('w-full', className)}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
-          <IconComponent size={18} className={config.color} />
+          <IconComponent size={18} />
           Network Status
         </CardTitle>
       </CardHeader>
@@ -184,7 +183,7 @@ export function NetworkStatusIndicator({
             variant="ghost"
             onClick={() => window.location.reload()}
           >
-            <RefreshIcon size={14} className="mr-1" />
+            <RefreshIcon size={14} />
             Refresh
           </Button>
         </div>
@@ -193,10 +192,10 @@ export function NetworkStatusIndicator({
         {showQueue && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ClockIcon size={14} className="text-muted-foreground" />
-                <span className="text-sm font-medium">Request Queue</span>
-              </div>
+                          <div className="flex items-center gap-2">
+              <ClockIcon size={14} />
+              <span className="text-sm font-medium">Request Queue</span>
+            </div>
               <Button
                 size="sm"
                 variant="ghost"
@@ -225,11 +224,11 @@ export function NetworkStatusIndicator({
                     variant="outline"
                     onClick={handleClearQueue}
                   >
-                    <XIcon size={14} className="mr-1" />
+                    <XIcon size={14} />
                     Clear Queue
                   </Button>
                   <Button size="sm" variant="outline">
-                    <RefreshIcon size={14} className="mr-1" />
+                    <RefreshIcon size={14} />
                     Retry All
                   </Button>
                 </div>
@@ -265,7 +264,7 @@ export function NetworkStatusIndicator({
             <div className="flex items-center justify-between text-sm">
               <span>Connection Type</span>
               <span className="font-medium">
-                {navigator.connection?.effectiveType || 'Unknown'}
+                {(navigator as any).connection?.effectiveType || 'Unknown'}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -343,7 +342,7 @@ export function NetworkRecoveryControls({
           variant="outline"
           onClick={() => window.location.reload()}
         >
-          <RefreshIcon size={14} className="mr-1" />
+          <RefreshIcon size={14} />
           Retry Connection
         </Button>
       )}
@@ -351,11 +350,11 @@ export function NetworkRecoveryControls({
       {queueStats.queueSize > 0 && (
         <>
           <Button size="sm" variant="outline" onClick={handleRetryAll}>
-            <RefreshIcon size={14} className="mr-1" />
+            <RefreshIcon size={14} />
             Retry All ({queueStats.queueSize})
           </Button>
           <Button size="sm" variant="outline" onClick={clearQueue}>
-            <XIcon size={14} className="mr-1" />
+            <XIcon size={14} />
             Clear Queue
           </Button>
         </>
@@ -384,7 +383,7 @@ export function NetworkAwareLoading({
     return (
       <div className={cn('flex items-center justify-center p-8', className)}>
         <div className="text-center space-y-2">
-          <WifiOffIcon size={24} className="mx-auto text-muted-foreground" />
+          <WifiOffIcon size={24} />
           <p className="text-sm text-muted-foreground">{offlineMessage}</p>
         </div>
       </div>

@@ -130,7 +130,7 @@ export function BatchDownloadPanel({
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <ArchiveIcon size={20} className="text-primary" />
+                  <ArchiveIcon size={20} />
                   <CardTitle className="text-lg">Batch Download</CardTitle>
                   <Badge variant="secondary">
                     {selectedAudios.size} selected
@@ -182,10 +182,7 @@ export function BatchDownloadPanel({
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <FileIcon
-                            size={14}
-                            className="text-muted-foreground"
-                          />
+                          <FileIcon size={14} />
                           <span className="text-sm font-medium truncate">
                             {audio.generatedAudioName}
                           </span>
@@ -207,8 +204,10 @@ export function BatchDownloadPanel({
                         </div>
                       </div>
 
-                      {selectedAudios.has(audio.id) && (
-                        <CheckIcon size={16} className="text-primary" />
+                      {selectedAudios.has(audio.id) ? (
+                        <CheckIcon size={16} />
+                      ) : (
+                        <div className="w-4 h-4 border-2 border-muted-foreground rounded" />
                       )}
                     </div>
                   ))}
@@ -283,7 +282,7 @@ export function BatchDownloadPanel({
               {/* No Selection Message */}
               {selectedAudios.size === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
-                  <FileIcon size={32} className="mx-auto mb-2 opacity-50" />
+                  <FileIcon size={32} />
                   <p className="text-sm">Select files to download</p>
                 </div>
               )}

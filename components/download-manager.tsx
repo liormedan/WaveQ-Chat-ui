@@ -56,37 +56,38 @@ export function DownloadManager({
   );
 
   const handleSingleDownload = async (audioId: string, format: string) => {
+    const taskId = `${audioId}-${format}`;
     const audio = generatedAudios.find((a) => a.id === audioId);
     if (!audio) return;
 
-    const taskId = `${audioId}_${Date.now()}`;
     const filename = `${audio.generatedAudioName}.${format}`;
 
-    // Add download task
-    const newTask: DownloadTask = {
-      id: taskId,
-      filename,
-      status: 'pending',
-      progress: 0,
-      startTime: new Date(),
-      fileSize: audio.metadata.fileSize,
-    };
-
-    setDownloadTasks((prev) => [...prev, newTask]);
     setActiveDownloads((prev) => new Set(prev).add(taskId));
+    setDownloadTasks((prev) => [
+      ...prev,
+      {
+        id: taskId,
+        filename,
+        status: 'pending',
+        progress: 0,
+        startTime: new Date(),
+      },
+    ]);
+
+    let progressInterval: NodeJS.Timeout | undefined;
 
     try {
-      // Update task status
+      // Update status to downloading
       setDownloadTasks((prev) =>
         prev.map((task) =>
           task.id === taskId
-            ? { ...task, status: 'downloading', progress: 10 }
+            ? { ...task, status: 'downloading' as const }
             : task,
         ),
       );
 
       // Simulate download progress
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setDownloadTasks((prev) =>
           prev.map((task) =>
             task.id === taskId
@@ -115,7 +116,9 @@ export function DownloadManager({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      clearInterval(progressInterval);
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
 
       // Mark as completed
       setDownloadTasks((prev) =>
@@ -152,7 +155,9 @@ export function DownloadManager({
         },
       ]);
     } catch (error) {
-      clearInterval(progressInterval);
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
 
       setDownloadTasks((prev) =>
         prev.map((task) =>
@@ -196,15 +201,13 @@ export function DownloadManager({
   const getStatusIcon = (status: DownloadTask['status']) => {
     switch (status) {
       case 'pending':
-        return <ClockIcon size={16} className="text-muted-foreground" />;
+        return <ClockIcon size={16} />;
       case 'downloading':
-        return (
-          <DownloadIcon size={16} className="text-blue-500 animate-pulse" />
-        );
+        return <DownloadIcon size={16} />;
       case 'completed':
-        return <CheckCircleIcon size={16} className="text-green-500" />;
+        return <CheckCircleIcon size={16} />;
       case 'error':
-        return <AlertCircleIcon size={16} className="text-red-500" />;
+        return <AlertCircleIcon size={16} />;
     }
   };
 
@@ -236,7 +239,7 @@ export function DownloadManager({
           onClick={() => setIsBatchPanelOpen(true)}
           disabled={generatedAudios.length === 0}
         >
-          <ArchiveIcon size={16} className="mr-2" />
+          <ArchiveIcon size={16} />
           Batch Download
           <Badge variant="secondary" className="ml-2">
             {generatedAudios.length}
@@ -256,7 +259,7 @@ export function DownloadManager({
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <DownloadIcon size={16} className="text-primary" />
+                <DownloadIcon size={16} />
                 <CardTitle className="text-sm font-medium">
                   Download History
                 </CardTitle>
@@ -293,7 +296,7 @@ export function DownloadManager({
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <FileIcon size={12} className="text-muted-foreground" />
+                      <FileIcon size={12} />
                       <span className="text-sm font-medium truncate">
                         {task.filename}
                       </span>

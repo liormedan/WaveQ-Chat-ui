@@ -1,0 +1,18 @@
+{
+  "buildCommand": "pnpm build",
+  "devCommand": "pnpm dev",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "functions": {
+    "app/(chat)/api/chat/[id]/stream/route.ts": {
+      "maxDuration": 300
+    },
+    "app/(chat)/api/audio/generate/route.ts": {
+      "maxDuration": 300
+    }
+  },
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

@@ -8,20 +8,18 @@ import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { Separator } from './ui/separator';
 import {
-  ActivityIcon,
-  AlertTriangleIcon,
+  LineChartIcon,
+  AlertCircleIcon,
   CheckCircleIcon,
   ClockIcon,
   DownloadIcon,
   UploadIcon,
-  WifiIcon,
-  WifiOffIcon,
+  GlobeIcon,
+  XIcon,
   SettingsIcon,
   RefreshIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowUpIcon,
   InfoIcon,
-  XIcon,
 } from './icons';
 import {
   useNetworkMonitoring,
@@ -103,9 +101,9 @@ function MetricCard({
   const getTrendIcon = () => {
     switch (trend) {
       case 'up':
-        return <TrendingUpIcon size={16} className="text-green-500" />;
+        return <ArrowUpIcon size={16} />;
       case 'down':
-        return <TrendingDownIcon size={16} className="text-red-500" />;
+        return <ArrowUpIcon size={16} />;
       default:
         return null;
     }
@@ -117,7 +115,7 @@ function MetricCard({
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              {Icon && <Icon size={16} className="text-muted-foreground" />}
+              {Icon && <Icon size={16} />}
               <h3 className="text-sm font-medium text-muted-foreground">
                 {title}
               </h3>
@@ -163,13 +161,13 @@ function HealthStatusIndicator({
   const getStatusIcon = () => {
     switch (status) {
       case 'healthy':
-        return <CheckCircleIcon size={16} className="text-green-500" />;
+        return <CheckCircleIcon size={16} />;
       case 'degraded':
-        return <AlertTriangleIcon size={16} className="text-yellow-500" />;
+        return <AlertCircleIcon size={16} />;
       case 'unhealthy':
-        return <XIcon size={16} className="text-red-500" />;
+        return <XIcon size={16} />;
       default:
-        return <InfoIcon size={16} className="text-gray-500" />;
+        return <InfoIcon size={16} />;
     }
   };
 
@@ -244,7 +242,7 @@ function PerformanceMetricsDisplay({
         value={`${(metrics.uptime * 100).toFixed(2)}%`}
         subtitle={`Last check: ${metrics.lastCheck.toLocaleTimeString()}`}
         status={getUptimeStatus()}
-        icon={ActivityIcon}
+        icon={LineChartIcon}
       />
     </div>
   );
@@ -269,7 +267,7 @@ function HealthHistoryList({
       <div className="space-y-2 max-h-64 overflow-y-auto">
         {recentHistory.length === 0 ? (
           <div className="text-center py-4 text-muted-foreground">
-            <InfoIcon size={24} className="mx-auto mb-2 opacity-50" />
+            <InfoIcon size={24} />
             <p className="text-sm">No health checks performed yet</p>
           </div>
         ) : (
@@ -346,7 +344,7 @@ export function NetworkMonitoringDashboard({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <WifiIcon size={20} className="text-primary" />
+                            <GlobeIcon size={20} />
             <h2 className="text-xl font-semibold">Network Monitoring</h2>
           </div>
           <Badge
@@ -383,12 +381,12 @@ export function NetworkMonitoringDashboard({
             >
               {isMonitoring ? (
                 <>
-                  <WifiOffIcon size={16} className="mr-2" />
+                  <XIcon size={16} />
                   Stop
                 </>
               ) : (
                 <>
-                  <WifiIcon size={16} className="mr-2" />
+                  <GlobeIcon size={16} />
                   Start
                 </>
               )}
@@ -398,11 +396,11 @@ export function NetworkMonitoringDashboard({
               variant="outline"
               onClick={() => setShowSettings(!showSettings)}
             >
-              <SettingsIcon size={16} className="mr-2" />
+              <SettingsIcon size={16} />
               Settings
             </Button>
             <Button size="sm" variant="outline" onClick={handleClearHistory}>
-              <RefreshIcon size={16} className="mr-2" />
+              <RefreshIcon size={16} />
               Clear
             </Button>
           </div>
@@ -507,7 +505,7 @@ export function NetworkMonitoringDashboard({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ActivityIcon size={20} />
+                              <LineChartIcon size={20} />
               System Status
             </CardTitle>
           </CardHeader>
@@ -550,12 +548,12 @@ export function NetworkMonitoringDashboard({
                       Alerts
                     </span>
                     <ul className="mt-1 space-y-1">
-                      {systemStatus.alerts.map((alert, index) => (
+                      {systemStatus.alerts.map((alert: string, index: number) => (
                         <li
                           key={`alert-${index}-${alert.slice(0, 10)}`}
                           className="text-sm text-red-600 flex items-center gap-1"
                         >
-                          <AlertTriangleIcon size={12} />
+                          <AlertCircleIcon size={12} />
                           {alert}
                         </li>
                       ))}
@@ -578,7 +576,7 @@ export function NetworkMonitoringDashboard({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUpIcon size={20} />
+                              <ArrowUpIcon size={20} />
               Performance Metrics
             </CardTitle>
           </CardHeader>

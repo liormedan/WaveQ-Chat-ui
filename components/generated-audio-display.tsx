@@ -123,7 +123,7 @@ export const GeneratedAudioDisplay: React.FC<GeneratedAudioDisplayProps> = ({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AudioIcon size={16} className="text-primary" />
+            <AudioIcon size={16} />
             <CardTitle className="text-sm font-medium">
               Generated Audio: {generatedAudio.generatedAudioName}
             </CardTitle>
@@ -232,7 +232,6 @@ export const GeneratedAudioDisplay: React.FC<GeneratedAudioDisplayProps> = ({
                         {step.status === 'completed' && (
                           <CheckCircleIcon
                             size={12}
-                            className="text-green-500"
                           />
                         )}
                         {step.status === 'running' && (
@@ -399,7 +398,7 @@ export const GeneratedAudioDisplay: React.FC<GeneratedAudioDisplayProps> = ({
                       }
                       className="h-6 px-2 text-xs"
                     >
-                      <DownloadIcon size={12} className="mr-1" />
+                      <DownloadIcon size={12} />
                       Download
                     </Button>
                   </div>

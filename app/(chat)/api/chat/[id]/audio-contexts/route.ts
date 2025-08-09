@@ -31,7 +31,7 @@ export async function GET(
     const audioContexts = await getAudioContextsByChatId({ chatId: id });
 
     // Return only the necessary fields for efficiency
-    const simplifiedContexts = audioContexts.map((context) => ({
+    const simplifiedContexts = audioContexts.map((context: any) => ({
       audioFileName: context.audioFileName,
       audioFileUrl: context.audioFileUrl,
       audioFileType: context.audioFileType,

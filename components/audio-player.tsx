@@ -150,7 +150,7 @@ export const AudioPlayer = ({ src, title, className }: AudioPlayerProps) => {
     >
       {/* Audio Info */}
       <div className="flex items-center gap-2">
-        <AudioIcon size={16} className="text-muted-foreground" />
+        <AudioIcon size={16} />
         <span className="text-sm font-medium truncate">
           {title || 'Audio File'}
         </span>

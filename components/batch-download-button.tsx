@@ -57,7 +57,7 @@ export function BatchDownloadButton({
         onClick={handleOpenPanel}
         className={className}
       >
-        <ArchiveIcon size={16} className="mr-2" />
+        <ArchiveIcon size={16} />
         Batch Download
         <Badge variant="secondary" className="ml-2">
           {generatedAudios.length}

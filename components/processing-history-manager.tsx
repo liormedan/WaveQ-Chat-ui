@@ -281,11 +281,11 @@ export function ProcessingHistoryManager({
     const isCompleted = item.totalProcessingTime > 0;
 
     if (hasErrors) {
-      return <AlertTriangleIcon size={16} className="text-red-500" />;
+      return <AlertTriangleIcon size={16} />;
     } else if (isCompleted) {
-      return <CheckCircleIcon size={16} className="text-green-500" />;
+      return <CheckCircleIcon size={16} />;
     } else {
-      return <ClockIcon size={16} className="text-yellow-500" />;
+      return <ClockIcon size={16} />;
     }
   };
 
