@@ -120,7 +120,7 @@ export const GeneratedAudioDisplay: React.FC<GeneratedAudioDisplayProps> = ({
 
   return (
     <Card
-      className={cn('w-full', className)}
+      className={cn('w-full generated-audio-card', className)}
       data-testid="generated-audio-display"
     >
       <CardHeader className="pb-3">
@@ -234,66 +234,63 @@ export const GeneratedAudioDisplay: React.FC<GeneratedAudioDisplayProps> = ({
           <ProcessingDetailsPanel
             processingType={generatedAudio.processingDetails.processingType}
             processingSteps={generatedAudio.processingDetails.processingSteps}
-            totalProcessingTime={generatedAudio.processingDetails.totalProcessingTime}
+            totalProcessingTime={
+              generatedAudio.processingDetails.totalProcessingTime
+            }
             qualityMetrics={generatedAudio.processingDetails.qualityMetrics}
             isActive={false}
             className="border-0 shadow-none"
           />
         )}
 
-              {/* Download Options */}
-              {chatId && showDownloadOptions && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="space-y-4 border-t pt-4"
-                >
-                  <h5 className="text-xs font-medium flex items-center gap-2">
-                    <DownloadIcon size={14} />
-                    Download Options
-                  </h5>
+        {/* Download Options */}
+        {chatId && showDownloadOptions && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="space-y-4 border-t pt-4"
+          >
+            <h5 className="text-xs font-medium flex items-center gap-2">
+              <DownloadIcon size={14} />
+              Download Options
+            </h5>
 
-                  <DownloadUtils
-                    chatId={chatId}
-                    audioIds={[generatedAudio.id]}
-                    onDownloadComplete={onDownloadComplete}
-                    onDownloadError={onDownloadError}
-                    className="text-sm"
-                  />
-                </motion.div>
-              )}
-
-              {/* Legacy Download Options */}
-              {onDownload && !chatId && (
-                <div className="space-y-2">
-                  <h5 className="text-xs font-medium">Download Options</h5>
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={selectedFormat}
-                      onChange={(e) => setSelectedFormat(e.target.value)}
-                      className="text-xs border rounded px-2 py-1"
-                    >
-                      <option value="mp3">MP3</option>
-                      <option value="wav">WAV</option>
-                      <option value="flac">FLAC</option>
-                      <option value="m4a">M4A</option>
-                    </select>
-                    <Button
-                      size="sm"
-                      onClick={() =>
-                        onDownload(generatedAudio.id, selectedFormat)
-                      }
-                      className="h-6 px-2 text-xs"
-                    >
-                      <DownloadIcon size={12} />
-                      Download
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
+            <DownloadUtils
+              chatId={chatId}
+              audioIds={[generatedAudio.id]}
+              onDownloadComplete={onDownloadComplete}
+              onDownloadError={onDownloadError}
+              className="text-sm"
+            />
           </motion.div>
+        )}
+
+        {/* Legacy Download Options */}
+        {onDownload && !chatId && (
+          <div className="space-y-2">
+            <h5 className="text-xs font-medium">Download Options</h5>
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedFormat}
+                onChange={(e) => setSelectedFormat(e.target.value)}
+                className="text-xs border rounded px-2 py-1"
+              >
+                <option value="mp3">MP3</option>
+                <option value="wav">WAV</option>
+                <option value="flac">FLAC</option>
+                <option value="m4a">M4A</option>
+              </select>
+              <Button
+                size="sm"
+                onClick={() => onDownload(generatedAudio.id, selectedFormat)}
+                className="h-6 px-2 text-xs"
+              >
+                <DownloadIcon size={12} />
+                Download
+              </Button>
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>

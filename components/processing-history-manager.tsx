@@ -325,7 +325,9 @@ export function ProcessingHistoryManager({
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <FileIcon size={16} className="text-primary" />
+                <div className="text-primary">
+                  <FileIcon size={16} />
+                </div>
                 <span className="text-sm font-medium">Total Processed</span>
               </div>
               <div className="text-2xl font-bold mt-2">
@@ -337,7 +339,9 @@ export function ProcessingHistoryManager({
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <ClockIcon size={16} className="text-primary" />
+                <div className="text-primary">
+                  <ClockIcon size={16} />
+                </div>
                 <span className="text-sm font-medium">Avg Processing Time</span>
               </div>
               <div className="text-2xl font-bold mt-2">
@@ -349,7 +353,9 @@ export function ProcessingHistoryManager({
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <ChartIcon size={16} className="text-primary" />
+                <div className="text-primary">
+                  <ChartIcon size={16} />
+                </div>
                 <span className="text-sm font-medium">Recent Activity</span>
               </div>
               <div className="text-2xl font-bold mt-2">
@@ -361,7 +367,9 @@ export function ProcessingHistoryManager({
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <InfoIcon size={16} className="text-primary" />
+                <div className="text-primary">
+                  <InfoIcon size={16} />
+                </div>
                 <span className="text-sm font-medium">Storage Used</span>
               </div>
               <div className="text-2xl font-bold mt-2">
@@ -376,7 +384,9 @@ export function ProcessingHistoryManager({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
-            <FilterIcon size={16} className="text-primary" />
+            <div className="text-primary">
+              <FilterIcon size={16} />
+            </div>
             <CardTitle className="text-sm font-medium">Filters</CardTitle>
           </div>
         </CardHeader>
@@ -514,7 +524,9 @@ export function ProcessingHistoryManager({
 
           {history.length === 0 && !isLoading && (
             <div className="text-center py-8 text-muted-foreground">
-              <HistoryIcon size={32} className="mx-auto mb-2 opacity-50" />
+              <div className="mx-auto mb-2 opacity-50">
+                <HistoryIcon size={32} />
+              </div>
               <p className="text-sm">No processing history found</p>
             </div>
           )}
@@ -540,7 +552,9 @@ export function ProcessingHistoryManager({
             >
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <TrashIcon size={20} className="text-primary" />
+                  <div className="text-primary">
+                    <TrashIcon size={20} />
+                  </div>
                   <CardTitle>Cleanup Old Files</CardTitle>
                 </div>
               </CardHeader>

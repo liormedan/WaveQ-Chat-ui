@@ -2,7 +2,10 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GeneratedAudioDisplay, type GeneratedAudioFile } from './generated-audio-display';
+import {
+  GeneratedAudioDisplay,
+  type GeneratedAudioFile,
+} from './generated-audio-display';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -28,7 +31,13 @@ interface GeneratedAudioGalleryProps {
 }
 
 type ViewMode = 'grid' | 'list';
-type FilterType = 'all' | 'enhancement' | 'transcription' | 'translation' | 'noise-reduction' | 'format-conversion';
+type FilterType =
+  | 'all'
+  | 'enhancement'
+  | 'transcription'
+  | 'translation'
+  | 'noise-reduction'
+  | 'format-conversion';
 
 export const GeneratedAudioGallery: React.FC<GeneratedAudioGalleryProps> = ({
   generatedAudios,
@@ -59,18 +68,26 @@ export const GeneratedAudioGallery: React.FC<GeneratedAudioGalleryProps> = ({
 
     // Apply filter
     if (filter !== 'all') {
-      filtered = filtered.filter(audio => audio.processingDetails.processingType === filter);
+      filtered = filtered.filter(
+        (audio) => audio.processingDetails.processingType === filter,
+      );
     }
 
     // Apply sort
     filtered = [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'newest':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         case 'oldest':
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
         case 'type':
-          return a.processingDetails.processingType.localeCompare(b.processingDetails.processingType);
+          return a.processingDetails.processingType.localeCompare(
+            b.processingDetails.processingType,
+          );
         default:
           return 0;
       }
@@ -81,7 +98,7 @@ export const GeneratedAudioGallery: React.FC<GeneratedAudioGalleryProps> = ({
 
   const processingTypeCounts = React.useMemo(() => {
     const counts: Record<string, number> = {};
-    generatedAudios.forEach(audio => {
+    generatedAudios.forEach((audio) => {
       const type = audio.processingDetails.processingType;
       counts[type] = (counts[type] || 0) + 1;
     });
@@ -107,7 +124,11 @@ export const GeneratedAudioGallery: React.FC<GeneratedAudioGalleryProps> = ({
               onClick={() => setIsExpanded(!isExpanded)}
               className="h-6 w-6 p-0"
             >
-              {isExpanded ? <ChevronUpIcon size={14} /> : <ChevronDownIcon size={14} />}
+              {isExpanded ? (
+                <ChevronUpIcon size={14} />
+              ) : (
+                <ChevronDownIcon size={14} />
+              )}
             </Button>
           </div>
           <div className="flex items-center gap-2">
@@ -130,7 +151,7 @@ export const GeneratedAudioGallery: React.FC<GeneratedAudioGalleryProps> = ({
                 <GridIcon size={12} />
               </Button>
             </div>
-            
+
             {onDownloadAll && (
               <Button
                 variant="outline"
@@ -155,7 +176,9 @@ export const GeneratedAudioGallery: React.FC<GeneratedAudioGalleryProps> = ({
                 onChange={(e) => setFilter(e.target.value as FilterType)}
                 className="text-xs border rounded px-2 py-1"
               >
-                <option value="all">All Types ({generatedAudios.length})</option>
+                <option value="all">
+                  All Types ({generatedAudios.length})
+                </option>
                 {Object.entries(processingTypeCounts).map(([type, count]) => (
                   <option key={type} value={type}>
                     {getProcessingTypeLabel(type)} ({count})
@@ -168,7 +191,9 @@ export const GeneratedAudioGallery: React.FC<GeneratedAudioGalleryProps> = ({
               <span className="text-xs text-muted-foreground">Sort:</span>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'type')}
+                onChange={(e) =>
+                  setSortBy(e.target.value as 'newest' | 'oldest' | 'type')
+                }
                 className="text-xs border rounded px-2 py-1"
               >
                 <option value="newest">Newest First</option>
@@ -190,14 +215,19 @@ export const GeneratedAudioGallery: React.FC<GeneratedAudioGalleryProps> = ({
             <CardContent className="space-y-4">
               {filteredAndSortedAudios.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <AudioIcon size={24} className="mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No audio files match the current filter.</p>
+                  <div className="mx-auto mb-2 opacity-50">
+                    <AudioIcon size={24} />
+                  </div>
+                  <p className="text-sm">
+                    No audio files match the current filter.
+                  </p>
                 </div>
               ) : (
                 <div
                   className={cn({
                     'space-y-4': viewMode === 'list',
-                    'grid grid-cols-1 md:grid-cols-2 gap-4': viewMode === 'grid',
+                    'grid grid-cols-1 md:grid-cols-2 gap-4':
+                      viewMode === 'grid',
                   })}
                 >
                   {filteredAndSortedAudios.map((generatedAudio, index) => (
@@ -216,9 +246,10 @@ export const GeneratedAudioGallery: React.FC<GeneratedAudioGalleryProps> = ({
                           'border-0 shadow-none': viewMode === 'list',
                         })}
                       />
-                      {viewMode === 'list' && index < filteredAndSortedAudios.length - 1 && (
-                        <Separator className="mt-4" />
-                      )}
+                      {viewMode === 'list' &&
+                        index < filteredAndSortedAudios.length - 1 && (
+                          <Separator className="mt-4" />
+                        )}
                     </motion.div>
                   ))}
                 </div>

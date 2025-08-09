@@ -144,7 +144,7 @@ export const AudioPlayer = ({ src, title, className }: AudioPlayerProps) => {
     <div
       data-testid="audio-player"
       className={cn(
-        'flex flex-col gap-3 p-4 bg-muted/50 rounded-lg',
+        'flex flex-col gap-3 p-4 audio-player-enhanced rounded-xl',
         className,
       )}
     >

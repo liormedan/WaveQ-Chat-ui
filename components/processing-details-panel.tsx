@@ -32,7 +32,12 @@ interface ProcessingStep {
 }
 
 interface ProcessingDetailsPanelProps {
-  processingType: 'enhancement' | 'transcription' | 'translation' | 'noise-reduction' | 'format-conversion';
+  processingType:
+    | 'enhancement'
+    | 'transcription'
+    | 'translation'
+    | 'noise-reduction'
+    | 'format-conversion';
   processingSteps: ProcessingStep[];
   totalProcessingTime: number;
   qualityMetrics?: {
@@ -72,15 +77,35 @@ export const ProcessingDetailsPanel: React.FC<ProcessingDetailsPanelProps> = ({
   const getStepStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircleIcon size={14} className="text-green-600" />;
+        return (
+          <div className="text-green-600">
+            <CheckCircleIcon size={14} />
+          </div>
+        );
       case 'running':
-        return <LoaderIcon size={14} className="text-blue-600 animate-spin" />;
+        return (
+          <div className="text-blue-600 animate-spin">
+            <LoaderIcon size={14} />
+          </div>
+        );
       case 'error':
-        return <AlertCircleIcon size={14} className="text-red-600" />;
+        return (
+          <div className="text-red-600">
+            <AlertCircleIcon size={14} />
+          </div>
+        );
       case 'pending':
-        return <ClockIcon size={14} className="text-gray-400" />;
+        return (
+          <div className="text-gray-400">
+            <ClockIcon size={14} />
+          </div>
+        );
       default:
-        return <ClockIcon size={14} className="text-gray-400" />;
+        return (
+          <div className="text-gray-400">
+            <ClockIcon size={14} />
+          </div>
+        );
     }
   };
 
@@ -100,24 +125,34 @@ export const ProcessingDetailsPanel: React.FC<ProcessingDetailsPanelProps> = ({
   };
 
   const getOverallProgress = () => {
-    const completedSteps = processingSteps.filter(step => step.status === 'completed').length;
-    const runningSteps = processingSteps.filter(step => step.status === 'running');
-    
+    const completedSteps = processingSteps.filter(
+      (step) => step.status === 'completed',
+    ).length;
+    const runningSteps = processingSteps.filter(
+      (step) => step.status === 'running',
+    );
+
     let progress = (completedSteps / processingSteps.length) * 100;
-    
+
     // Add partial progress for running steps
     if (runningSteps.length > 0) {
-      const runningProgress = runningSteps.reduce((sum, step) => sum + (step.progress || 0), 0);
-      progress += (runningProgress / runningSteps.length / processingSteps.length) * 100;
+      const runningProgress = runningSteps.reduce(
+        (sum, step) => sum + (step.progress || 0),
+        0,
+      );
+      progress +=
+        (runningProgress / runningSteps.length / processingSteps.length) * 100;
     }
-    
+
     return Math.min(progress, 100);
   };
 
   const getOverallStatus = () => {
-    if (processingSteps.some(step => step.status === 'error')) return 'error';
-    if (processingSteps.some(step => step.status === 'running')) return 'running';
-    if (processingSteps.every(step => step.status === 'completed')) return 'completed';
+    if (processingSteps.some((step) => step.status === 'error')) return 'error';
+    if (processingSteps.some((step) => step.status === 'running'))
+      return 'running';
+    if (processingSteps.every((step) => step.status === 'completed'))
+      return 'completed';
     return 'pending';
   };
 
@@ -145,11 +180,12 @@ export const ProcessingDetailsPanel: React.FC<ProcessingDetailsPanelProps> = ({
             <CardTitle className="text-sm font-medium">
               {getProcessingTypeLabel(processingType)}
             </CardTitle>
-            <Badge 
-              variant={overallStatus === 'completed' ? 'default' : 'secondary'} 
+            <Badge
+              variant={overallStatus === 'completed' ? 'default' : 'secondary'}
               className="text-xs"
             >
-              {overallStatus === 'completed' && `Completed in ${formatDuration(totalProcessingTime)}`}
+              {overallStatus === 'completed' &&
+                `Completed in ${formatDuration(totalProcessingTime)}`}
               {overallStatus === 'running' && 'Processing...'}
               {overallStatus === 'error' && 'Error'}
               {overallStatus === 'pending' && 'Pending'}
@@ -182,7 +218,11 @@ export const ProcessingDetailsPanel: React.FC<ProcessingDetailsPanelProps> = ({
               onClick={() => setIsExpanded(!isExpanded)}
               className="h-6 w-6 p-0"
             >
-              {isExpanded ? <ChevronUpIcon size={14} /> : <ChevronDownIcon size={14} />}
+              {isExpanded ? (
+                <ChevronUpIcon size={14} />
+              ) : (
+                <ChevronDownIcon size={14} />
+              )}
             </Button>
           </div>
         </div>
@@ -194,7 +234,8 @@ export const ProcessingDetailsPanel: React.FC<ProcessingDetailsPanelProps> = ({
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>{Math.round(overallProgress)}% complete</span>
               <span>
-                {processingSteps.filter(s => s.status === 'completed').length} of {processingSteps.length} steps
+                {processingSteps.filter((s) => s.status === 'completed').length}{' '}
+                of {processingSteps.length} steps
               </span>
             </div>
           </div>
@@ -217,7 +258,10 @@ export const ProcessingDetailsPanel: React.FC<ProcessingDetailsPanelProps> = ({
                 </h4>
                 <div className="space-y-2">
                   {processingSteps.map((step, index) => (
-                    <div key={step.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
+                    <div
+                      key={step.id}
+                      className="flex items-center gap-3 p-2 rounded-lg bg-muted/30"
+                    >
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         {getStepStatusIcon(step.status)}
                         <span className="text-sm truncate">{step.name}</span>
@@ -257,7 +301,9 @@ export const ProcessingDetailsPanel: React.FC<ProcessingDetailsPanelProps> = ({
                       )}
                       {qualityMetrics.clarityScore && (
                         <div className="text-center">
-                          <div className="text-xs font-medium mb-1">Clarity</div>
+                          <div className="text-xs font-medium mb-1">
+                            Clarity
+                          </div>
                           <Badge variant="outline" className="text-xs">
                             {qualityMetrics.clarityScore.toFixed(1)}/10
                           </Badge>
@@ -265,7 +311,9 @@ export const ProcessingDetailsPanel: React.FC<ProcessingDetailsPanelProps> = ({
                       )}
                       {qualityMetrics.fidelityScore && (
                         <div className="text-center">
-                          <div className="text-xs font-medium mb-1">Fidelity</div>
+                          <div className="text-xs font-medium mb-1">
+                            Fidelity
+                          </div>
                           <Badge variant="outline" className="text-xs">
                             {qualityMetrics.fidelityScore.toFixed(1)}/10
                           </Badge>
@@ -284,23 +332,42 @@ export const ProcessingDetailsPanel: React.FC<ProcessingDetailsPanelProps> = ({
                     <h4 className="text-sm font-medium">Processing Summary</h4>
                     <div className="grid grid-cols-2 gap-4 text-xs">
                       <div>
-                        <span className="text-muted-foreground">Total Time:</span>
-                        <span className="ml-1 font-medium">{formatDuration(totalProcessingTime)}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Steps:</span>
-                        <span className="ml-1 font-medium">{processingSteps.length}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Success Rate:</span>
+                        <span className="text-muted-foreground">
+                          Total Time:
+                        </span>
                         <span className="ml-1 font-medium">
-                          {Math.round((processingSteps.filter(s => s.status === 'completed').length / processingSteps.length) * 100)}%
+                          {formatDuration(totalProcessingTime)}
                         </span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Avg Step Time:</span>
+                        <span className="text-muted-foreground">Steps:</span>
                         <span className="ml-1 font-medium">
-                          {formatDuration(totalProcessingTime / processingSteps.length)}
+                          {processingSteps.length}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">
+                          Success Rate:
+                        </span>
+                        <span className="ml-1 font-medium">
+                          {Math.round(
+                            (processingSteps.filter(
+                              (s) => s.status === 'completed',
+                            ).length /
+                              processingSteps.length) *
+                              100,
+                          )}
+                          %
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">
+                          Avg Step Time:
+                        </span>
+                        <span className="ml-1 font-medium">
+                          {formatDuration(
+                            totalProcessingTime / processingSteps.length,
+                          )}
                         </span>
                       </div>
                     </div>

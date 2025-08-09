@@ -22,7 +22,8 @@ export const MessageStatusIndicator = ({
         return {
           icon: <LoaderIcon size={14} />,
           text: message || 'Processing...',
-          className: 'text-blue-600 dark:text-blue-400',
+          className:
+            'processing-status-enhanced px-2 py-1 rounded-full text-xs font-medium',
         };
       case 'completed':
         return {

@@ -76,7 +76,7 @@ export function SidebarUserNav({ user }: { user: User }) {
               className="cursor-pointer"
               onSelect={() => router.push('/settings')}
             >
-              <SettingsIcon size={16} className="mr-2" />
+              <div className="mr-2"><SettingsIcon size={16} /></div>
               הגדרות
             </DropdownMenuItem>
             <DropdownMenuItem

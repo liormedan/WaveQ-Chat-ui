@@ -139,7 +139,7 @@ export function Chat({
 
   return (
     <>
-      <div className="flex flex-col min-w-0 h-dvh bg-background">
+      <div className="flex flex-col min-w-0 h-dvh chat-container">
         {/* Network Status Banner */}
         {isOffline && (
           <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-3">

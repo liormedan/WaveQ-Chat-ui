@@ -72,25 +72,23 @@ function PureChatHeader({
         />
       )}
 
+      {/* Spacer for alignment */}
+      <div className="order-4 md:ml-auto" />
+
       <AudioSettingsMenu
         chatId={chatId}
         hasAudioFiles={true}
         hasGeneratedAudio={true}
         generatedAudios={[]}
-        className="order-4 md:ml-auto"
+        className="order-5"
       />
-
-      {/* Network Status Indicator */}
-      <div className="order-5 md:order-6">
-        <NetworkStatusIndicator variant="compact" />
-      </div>
 
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
             variant="outline"
             size="icon"
-            className="order-6 md:order-7"
+            className="order-6 h-8 w-8 settings-button"
             onClick={() => router.push('/settings')}
           >
             <SettingsIcon size={16} />

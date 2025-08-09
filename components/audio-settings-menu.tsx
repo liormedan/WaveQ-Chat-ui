@@ -55,14 +55,12 @@ export function AudioSettingsMenu({
             variant="outline"
             size="sm"
             className={cn(
-              'h-8 px-2 text-xs font-medium',
-              'bg-background hover:bg-muted',
-              'border-border hover:border-muted-foreground/20',
+              'h-8 px-3 text-xs font-medium export-button',
               className,
             )}
           >
-            <SettingsIcon size={14} />
-            <span className="ml-1 hidden sm:inline">Audio</span>
+            <ExportIcon size={14} />
+            <span className="ml-1 hidden sm:inline">Export</span>
           </Button>
         </DropdownMenuTrigger>
 

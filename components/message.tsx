@@ -173,7 +173,8 @@ const PurePreviewMessage = ({
                         showControls={true}
                         showWaveform={false}
                         metadata={{
-                          format: attachment.mediaType?.split('/')[1] || 'audio',
+                          format:
+                            attachment.mediaType?.split('/')[1] || 'audio',
                           // These would be extracted from actual file metadata
                           duration: undefined,
                           fileSize: undefined,
@@ -277,7 +278,7 @@ const PurePreviewMessage = ({
                       <div
                         data-testid="message-content"
                         className={cn('flex flex-col gap-4', {
-                          'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                          'chat-message-user px-4 py-3 rounded-2xl':
                             message.role === 'user',
                         })}
                       >
@@ -300,10 +301,16 @@ const PurePreviewMessage = ({
                               chatId={chatId}
                               onDownloadAll={() => {
                                 // Handle download all functionality
-                                console.log('Download all generated audios for chat:', chatId);
+                                console.log(
+                                  'Download all generated audios for chat:',
+                                  chatId,
+                                );
                               }}
                               onDownloadComplete={(downloadInfo) => {
-                                console.log('Download completed:', downloadInfo);
+                                console.log(
+                                  'Download completed:',
+                                  downloadInfo,
+                                );
                               }}
                               onDownloadError={(error) => {
                                 console.error('Download error:', error);

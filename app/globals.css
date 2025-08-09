@@ -4,41 +4,41 @@
 
 /* Audio Player Slider Styling */
 .slider {
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent;
-  cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
 }
 
 .slider::-webkit-slider-track {
-  background: hsl(var(--muted));
-  height: 4px;
-  border-radius: 2px;
+    background: hsl(var(--muted));
+    height: 4px;
+    border-radius: 2px;
 }
 
 .slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  background: hsl(var(--primary));
-  height: 12px;
-  width: 12px;
-  border-radius: 50%;
-  cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background: hsl(var(--primary));
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    cursor: pointer;
 }
 
 .slider::-moz-range-track {
-  background: hsl(var(--muted));
-  height: 4px;
-  border-radius: 2px;
+    background: hsl(var(--muted));
+    height: 4px;
+    border-radius: 2px;
 }
 
 .slider::-moz-range-thumb {
-  background: hsl(var(--primary));
-  height: 12px;
-  width: 12px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: none;
+    background: hsl(var(--primary));
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
 }
 
 :root {
@@ -63,73 +63,84 @@
 
 @layer base {
     :root {
-        --background: 0 0% 100%;
-        --foreground: 240 10% 3.9%;
-        --card: 0 0% 100%;
-        --card-foreground: 240 10% 3.9%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 240 10% 3.9%;
-        --primary: 240 5.9% 10%;
-        --primary-foreground: 0 0% 98%;
-        --secondary: 240 4.8% 95.9%;
-        --secondary-foreground: 240 5.9% 10%;
-        --muted: 240 4.8% 95.9%;
-        --muted-foreground: 240 3.8% 46.1%;
-        --accent: 240 4.8% 95.9%;
-        --accent-foreground: 240 5.9% 10%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 240 5.9% 90%;
-        --input: 240 5.9% 90%;
-        --ring: 240 10% 3.9%;
-        --chart-1: 12 76% 61%;
-        --chart-2: 173 58% 39%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
-        --radius: 0.5rem;
-        --sidebar-background: 0 0% 98%;
-        --sidebar-foreground: 240 5.3% 26.1%;
-        --sidebar-primary: 240 5.9% 10%;
-        --sidebar-primary-foreground: 0 0% 98%;
-        --sidebar-accent: 240 4.8% 95.9%;
-        --sidebar-accent-foreground: 240 5.9% 10%;
-        --sidebar-border: 220 13% 91%;
-        --sidebar-ring: 217.2 91.2% 59.8%;
-    }
-    .dark {
-        --background: 240 10% 3.9%;
-        --foreground: 0 0% 98%;
-        --card: 240 10% 3.9%;
-        --card-foreground: 0 0% 98%;
-        --popover: 240 10% 3.9%;
-        --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 240 5.9% 10%;
-        --secondary: 240 3.7% 15.9%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 240 3.7% 15.9%;
-        --muted-foreground: 240 5% 64.9%;
-        --accent: 240 3.7% 15.9%;
-        --accent-foreground: 0 0% 98%;
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 240 3.7% 15.9%;
-        --input: 240 3.7% 15.9%;
-        --ring: 240 4.9% 83.9%;
-        --chart-1: 220 70% 50%;
-        --chart-2: 160 60% 45%;
+        /* Light theme - Kiro-inspired colors */
+        --background: 220 14% 96%;
+        --foreground: 220 13% 18%;
+        --card: 220 14% 94%;
+        --card-foreground: 220 13% 18%;
+        --popover: 220 14% 94%;
+        --popover-foreground: 220 13% 18%;
+        --primary: 220 13% 18%;
+        --primary-foreground: 220 14% 96%;
+        --secondary: 220 14% 92%;
+        --secondary-foreground: 220 13% 18%;
+        --muted: 220 14% 92%;
+        --muted-foreground: 220 9% 46%;
+        --accent: 220 14% 92%;
+        --accent-foreground: 220 13% 18%;
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 220 14% 96%;
+        --border: 220 13% 88%;
+        --input: 220 13% 88%;
+        --ring: 220 13% 18%;
+        --chart-1: 220 91% 56%;
+        --chart-2: 160 84% 39%;
         --chart-3: 30 80% 55%;
         --chart-4: 280 65% 60%;
         --chart-5: 340 75% 55%;
-        --sidebar-background: 240 5.9% 10%;
-        --sidebar-foreground: 240 4.8% 95.9%;
-        --sidebar-primary: 224.3 76.3% 48%;
-        --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 240 3.7% 15.9%;
-        --sidebar-accent-foreground: 240 4.8% 95.9%;
-        --sidebar-border: 240 3.7% 15.9%;
-        --sidebar-ring: 217.2 91.2% 59.8%;
+        --radius: 0.75rem;
+        /* Custom accent colors */
+        --purple-accent: 270 91% 65%;
+        --orange-accent: 25 95% 53%;
+        --chat-border: 270 91% 65%;
+        --sidebar-background: 220 14% 92%;
+        --sidebar-foreground: 220 13% 18%;
+        --sidebar-primary: 220 13% 18%;
+        --sidebar-primary-foreground: 220 14% 96%;
+        --sidebar-accent: 220 14% 90%;
+        --sidebar-accent-foreground: 220 13% 18%;
+        --sidebar-border: 220 13% 88%;
+        --sidebar-ring: 220 13% 18%;
+    }
+
+    .dark {
+        /* Dark theme - Kiro-inspired colors */
+        --background: 220 27% 8%;
+        --foreground: 220 9% 89%;
+        --card: 220 27% 10%;
+        --card-foreground: 220 9% 89%;
+        --popover: 220 27% 10%;
+        --popover-foreground: 220 9% 89%;
+        --primary: 220 9% 89%;
+        --primary-foreground: 220 27% 8%;
+        --secondary: 220 27% 12%;
+        --secondary-foreground: 220 9% 89%;
+        --muted: 220 27% 12%;
+        --muted-foreground: 220 9% 63%;
+        --accent: 220 27% 12%;
+        --accent-foreground: 220 9% 89%;
+        --destructive: 0 63% 31%;
+        --destructive-foreground: 220 9% 89%;
+        --border: 220 27% 18%;
+        --input: 220 27% 18%;
+        --ring: 220 9% 89%;
+        --chart-1: 220 91% 56%;
+        --chart-2: 160 84% 39%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 340 75% 55%;
+        /* Custom accent colors */
+        --purple-accent: 270 91% 65%;
+        --orange-accent: 25 95% 53%;
+        --chat-border: 270 91% 65%;
+        --sidebar-background: 220 27% 8%;
+        --sidebar-foreground: 220 9% 89%;
+        --sidebar-primary: 220 91% 56%;
+        --sidebar-primary-foreground: 220 27% 8%;
+        --sidebar-accent: 220 27% 12%;
+        --sidebar-accent-foreground: 220 9% 89%;
+        --sidebar-border: 220 27% 18%;
+        --sidebar-ring: 220 91% 56%;
     }
 }
 
@@ -171,7 +182,7 @@
     @apply bg-background dark:bg-zinc-800 outline-none selection:bg-zinc-900 !important;
 }
 
-.ͼo.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground,
+.ͼo.cm-focused>.cm-scroller>.cm-selectionLayer .cm-selectionBackground,
 .ͼo.cm-selectionBackground,
 .ͼo.cm-content::selection {
     @apply bg-zinc-200 dark:bg-zinc-900 !important;
@@ -200,4 +211,365 @@
 
 .suggestion-highlight {
     @apply bg-blue-200 hover:bg-blue-300 dark:hover:bg-blue-400/50 dark:text-blue-50 dark:bg-blue-500/40;
+}
+
+/* Chat-specific styling inspired by Kiro */
+.chat-message-user {
+    @apply text-foreground;
+    background: linear-gradient(135deg, hsl(220 14% 88%) 0%, hsl(220 14% 85%) 100%);
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    border: 1px solid hsl(var(--border));
+}
+
+.chat-message-assistant {
+    @apply bg-card;
+    border: 1px solid hsl(var(--purple-accent) / 0.2);
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.chat-container {
+    background: linear-gradient(to bottom,
+            hsl(var(--background)) 0%,
+            hsl(var(--background) / 0.98) 100%);
+    border: 3px solid hsl(var(--purple-accent) / 0.4);
+    border-radius: 1rem;
+    position: relative;
+    box-shadow: 0 0 30px hsl(var(--purple-accent) / 0.2);
+}
+
+.chat-container::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    background: linear-gradient(135deg,
+            hsl(var(--purple-accent)) 0%,
+            hsl(var(--purple-accent) / 0.7) 100%);
+    border-radius: 1rem;
+    z-index: -1;
+    opacity: 0.8;
+}
+
+.audio-player-enhanced {
+    @apply bg-muted/30 backdrop-blur-sm;
+    border: 1px solid hsl(var(--purple-accent) / 0.3);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px 0 rgb(0 0 0 / 0.06);
+}
+
+.audio-player-enhanced:hover {
+    border: 1px solid hsl(var(--purple-accent) / 0.5);
+    box-shadow: 0 0 20px hsl(var(--purple-accent) / 0.2);
+}
+
+.processing-status-enhanced {
+    @apply bg-muted/50 border border-border text-muted-foreground;
+    backdrop-filter: blur(8px);
+}
+
+.generated-audio-card {
+    @apply bg-card/80 backdrop-blur-sm transition-all duration-200;
+    border: 1px solid hsl(var(--purple-accent) / 0.3);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+}
+
+.generated-audio-card:hover {
+    border: 1px solid hsl(var(--purple-accent) / 0.6);
+    box-shadow: 0 8px 25px -5px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05), 0 0 30px hsl(var(--purple-accent) / 0.2);
+    transform: translateY(-1px);
+}
+
+/* Smooth transitions for all interactive elements */
+.chat-message-user,
+.chat-message-assistant,
+.audio-player-enhanced {
+    @apply transition-all duration-200;
+}
+
+.chat-message-user:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+}
+
+.chat-message-assistant:hover {
+    border: 1px solid hsl(var(--purple-accent) / 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06), 0 0 15px hsl(var(--purple-accent) / 0.1);
+}
+
+/* Enhanced button styling - override existing */
+.btn-primary {
+    background: linear-gradient(135deg, hsl(var(--purple-accent)) 0%, hsl(var(--purple-accent) / 0.8) 100%) !important;
+    border: 2px solid hsl(var(--purple-accent) / 0.6) !important;
+    color: white !important;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, hsl(var(--purple-accent) / 0.9) 0%, hsl(var(--purple-accent) / 0.7) 100%) !important;
+    border: 2px solid hsl(var(--purple-accent) / 0.8) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px -2px rgb(0 0 0 / 0.15), 0 0 25px hsl(var(--purple-accent) / 0.3);
+}
+
+/* Enhanced input styling with purple border */
+.chat-input-enhanced {
+    @apply bg-muted/50 backdrop-blur-sm transition-all duration-200;
+    border: 2px solid hsl(var(--purple-accent) / 0.3) !important;
+    box-shadow: 0 2px 8px 0 rgb(0 0 0 / 0.05);
+}
+
+.chat-input-enhanced:focus {
+    border: 2px solid hsl(var(--purple-accent) / 0.6) !important;
+    box-shadow: 0 0 0 3px hsl(var(--purple-accent) / 0.1), 0 4px 12px 0 rgb(0 0 0 / 0.1);
+    outline: none !important;
+    ring: none !important;
+}
+
+.chat-input-enhanced:focus-visible {
+    outline: none !important;
+    ring: none !important;
+}
+
+.chat-input-enhanced:hover {
+    border: 2px solid hsl(var(--purple-accent) / 0.4) !important;
+    box-shadow: 0 0 20px hsl(var(--purple-accent) / 0.1);
+}
+
+/* Enhanced send button styling */
+.send-button-enhanced {
+    @apply transition-all duration-200;
+    background: linear-gradient(135deg, hsl(var(--purple-accent)) 0%, hsl(var(--purple-accent) / 0.8) 100%);
+    border: 1px solid hsl(var(--purple-accent) / 0.5) !important;
+    color: white;
+    box-shadow: 0 2px 8px hsl(var(--purple-accent) / 0.3);
+}
+
+.send-button-enhanced:hover:not(:disabled) {
+    transform: translateY(-1px) scale(1.05);
+    box-shadow: 0 4px 16px hsl(var(--purple-accent) / 0.4);
+    background: linear-gradient(135deg, hsl(var(--purple-accent) / 0.9) 0%, hsl(var(--purple-accent) / 0.7) 100%);
+}
+
+.send-button-enhanced:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Remove all white outlines and rings from textarea */
+textarea.chat-input-enhanced,
+textarea.chat-input-enhanced:focus,
+textarea.chat-input-enhanced:focus-visible,
+textarea.chat-input-enhanced:active {
+    outline: none !important;
+    --tw-ring-shadow: none !important;
+    --tw-ring-offset-shadow: none !important;
+    box-shadow: 0 0 0 3px hsl(var(--purple-accent) / 0.1) !important;
+}
+
+/* Override Tailwind ring utilities */
+.chat-input-enhanced {
+    --tw-ring-shadow: none !important;
+    --tw-ring-offset-shadow: none !important;
+}
+
+.chat-input-enhanced:focus-visible {
+    --tw-ring-shadow: none !important;
+    --tw-ring-offset-shadow: none !important;
+    outline: none !important;
+}
+
+/* Global card styling with purple borders */
+.card-enhanced,
+[data-testid*="card"],
+.card,
+.bg-card {
+    border: 2px solid hsl(var(--purple-accent) / 0.4) !important;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.1), 0 1px 2px 0 rgb(0 0 0 / 0.06);
+}
+
+.card-enhanced:hover,
+[data-testid*="card"]:hover,
+.card:hover,
+.bg-card:hover {
+    border: 2px solid hsl(var(--purple-accent) / 0.7) !important;
+    box-shadow: 0 6px 10px -2px rgb(0 0 0 / 0.1), 0 4px 6px -1px rgb(0 0 0 / 0.06), 0 0 25px hsl(var(--purple-accent) / 0.2);
+    transform: translateY(-2px);
+}
+
+/* Enhanced borders for common UI components */
+.border,
+.border-border {
+    border-color: hsl(var(--purple-accent) / 0.2) !important;
+}
+
+/* Special styling for interactive cards */
+.interactive-card {
+    border: 2px solid hsl(var(--purple-accent) / 0.4) !important;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+}
+
+.interactive-card:hover {
+    border: 2px solid hsl(var(--purple-accent) / 0.7) !important;
+    box-shadow: 0 8px 25px -5px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05), 0 0 30px hsl(var(--purple-accent) / 0.2);
+    transform: translateY(-2px);
+}
+
+/* Enhanced styling for all buttons */
+button,
+.btn,
+.button,
+[role="button"],
+input[type="button"],
+input[type="submit"] {
+    border: 2px solid hsl(var(--purple-accent) / 0.4) !important;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+}
+
+button:hover,
+.btn:hover,
+.button:hover,
+[role="button"]:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover {
+    border: 2px solid hsl(var(--purple-accent) / 0.6) !important;
+    box-shadow: 0 4px 8px -2px rgb(0 0 0 / 0.1), 0 0 20px hsl(var(--purple-accent) / 0.2);
+    transform: translateY(-1px);
+}
+
+/* Primary buttons with purple background */
+.btn-primary,
+.button-primary,
+button[data-variant="primary"] {
+    background: linear-gradient(135deg, hsl(var(--purple-accent)) 0%, hsl(var(--purple-accent) / 0.8) 100%) !important;
+    border: 2px solid hsl(var(--purple-accent) / 0.6) !important;
+    color: white !important;
+}
+
+.btn-primary:hover,
+.button-primary:hover,
+button[data-variant="primary"]:hover {
+    background: linear-gradient(135deg, hsl(var(--purple-accent) / 0.9) 0%, hsl(var(--purple-accent) / 0.7) 100%) !important;
+    border: 2px solid hsl(var(--purple-accent) / 0.8) !important;
+    box-shadow: 0 6px 12px -2px rgb(0 0 0 / 0.15), 0 0 25px hsl(var(--purple-accent) / 0.3);
+}
+
+/* Enhanced popover and dropdown styling */
+.popover,
+.dropdown-menu,
+[role="menu"],
+[role="dialog"] {
+    border: 1px solid hsl(var(--purple-accent) / 0.4) !important;
+    box-shadow: 0 10px 38px -10px rgb(0 0 0 / 0.35), 0 10px 20px -15px rgb(0 0 0 / 0.2), 0 0 30px hsl(var(--purple-accent) / 0.1);
+}
+
+/* Enhanced form inputs */
+input:not(.chat-input-enhanced),
+select,
+.input {
+    border: 1px solid hsl(var(--purple-accent) / 0.2) !important;
+    transition: all 0.2s ease;
+}
+
+input:not(.chat-input-enhanced):focus,
+select:focus,
+.input:focus {
+    border: 2px solid hsl(var(--purple-accent) / 0.5) !important;
+    box-shadow: 0 0 0 3px hsl(var(--purple-accent) / 0.1);
+    outline: none !important;
+}
+
+/* Ghost and outline button variants */
+.btn-ghost,
+.button-ghost,
+button[data-variant="ghost"] {
+    background: transparent !important;
+    border: 2px solid hsl(var(--purple-accent) / 0.3) !important;
+    color: hsl(var(--purple-accent)) !important;
+}
+
+.btn-ghost:hover,
+.button-ghost:hover,
+button[data-variant="ghost"]:hover {
+    background: hsl(var(--purple-accent) / 0.1) !important;
+    border: 2px solid hsl(var(--purple-accent) / 0.5) !important;
+    color: hsl(var(--purple-accent)) !important;
+}
+
+.btn-outline,
+.button-outline,
+button[data-variant="outline"] {
+    background: transparent !important;
+    border: 2px solid hsl(var(--purple-accent) / 0.4) !important;
+    color: hsl(var(--purple-accent)) !important;
+}
+
+.btn-outline:hover,
+.button-outline:hover,
+button[data-variant="outline"]:hover {
+    background: hsl(var(--purple-accent)) !important;
+    border: 2px solid hsl(var(--purple-accent)) !important;
+    color: white !important;
+}
+
+/* Special styling for Export button with double border */
+.export-button {
+    position: relative;
+    border: 1px solid hsl(var(--purple-accent) / 0.6) !important;
+    color: hsl(var(--purple-accent)) !important;
+    background: transparent !important;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+}
+
+.export-button::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border: 1px solid hsl(var(--purple-accent) / 0.4);
+    border-radius: calc(var(--radius) + 2px);
+    z-index: -1;
+    transition: all 0.2s ease;
+    background: transparent;
+}
+
+.export-button:hover {
+    border: 1px solid hsl(var(--purple-accent) / 0.8) !important;
+    background: hsl(var(--purple-accent) / 0.05) !important;
+    color: hsl(var(--purple-accent)) !important;
+    box-shadow: 0 4px 8px -2px rgb(0 0 0 / 0.1), 0 0 20px hsl(var(--purple-accent) / 0.2);
+    transform: translateY(-1px);
+}
+
+.export-button:hover::before {
+    border: 1px solid hsl(var(--purple-accent) / 0.6);
+    box-shadow: 0 0 15px hsl(var(--purple-accent) / 0.1);
+}
+
+/* Settings button alignment and styling */
+.settings-button {
+    border: 2px solid hsl(var(--purple-accent) / 0.4) !important;
+    color: hsl(var(--purple-accent)) !important;
+    background: transparent !important;
+    transition: all 0.2s ease;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.settings-button:hover {
+    border: 2px solid hsl(var(--purple-accent) / 0.6) !important;
+    background: hsl(var(--purple-accent) / 0.1) !important;
+    color: hsl(var(--purple-accent)) !important;
+    box-shadow: 0 4px 8px -2px rgb(0 0 0 / 0.1), 0 0 15px hsl(var(--purple-accent) / 0.2);
+    transform: translateY(-1px);
 }

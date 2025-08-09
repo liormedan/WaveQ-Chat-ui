@@ -147,15 +147,15 @@ export const ProcessingProgress: React.FC<ProcessingProgressProps> = ({
   const getStepStatusIcon = (stepStatus: ProcessingStepStatus) => {
     switch (stepStatus) {
       case 'pending':
-        return <ClockIcon size={14} className="text-muted-foreground" />;
+        return <div className="text-muted-foreground"><ClockIcon size={14} /></div>;
       case 'running':
         return <LoaderIcon size={14} />;
       case 'completed':
-        return <CheckCircleFillIcon size={14} className="text-green-600" />;
+        return <div className="text-green-600"><CheckCircleFillIcon size={14} /></div>;
       case 'error':
-        return <WarningIcon size={14} className="text-red-600" />;
+        return <div className="text-red-600"><WarningIcon size={14} /></div>;
       case 'cancelled':
-        return <XIcon size={14} className="text-orange-600" />;
+        return <div className="text-orange-600"><XIcon size={14} /></div>;
       default:
         return null;
     }
@@ -364,14 +364,14 @@ export const ProcessingProgress: React.FC<ProcessingProgressProps> = ({
               onClick={onCancel}
               className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
             >
-              <XIcon size={14} className="mr-2" />
+              <div className="mr-2"><XIcon size={14} /></div>
               Cancel
             </Button>
           )}
 
           {canRetry && status === 'error' && onRetry && (
             <Button variant="outline" size="sm" onClick={onRetry}>
-              <RefreshIcon size={14} className="mr-2" />
+              <div className="mr-2"><RefreshIcon size={14} /></div>
               Retry
             </Button>
           )}

@@ -323,7 +323,7 @@ function PureMultimodalInput({
         value={input}
         onChange={handleInput}
         className={cx(
-          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
+          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base pb-10 chat-input-enhanced',
           className,
         )}
         rows={2}
@@ -438,7 +438,7 @@ function PureSendButton({
   return (
     <Button
       data-testid="send-button"
-      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
+      className="rounded-full p-1.5 h-fit send-button-enhanced"
       onClick={(event) => {
         event.preventDefault();
         submitForm();
