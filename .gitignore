@@ -41,3 +41,14 @@ yarn-error.log*
 /playwright-report/
 /blob-report/
 /playwright/*
+
+# IDE and development tools
+.vscode/
+.kiro/
+.idea/
+*.swp
+*.swo
+
+# Database
+*.db
+*.sqlite
