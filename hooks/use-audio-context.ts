@@ -34,9 +34,9 @@ export function useAudioContext(chatId: string) {
         setAudioContexts(data.audioContexts || []);
       } catch (err) {
         console.error('Error fetching audio contexts:', err);
-        setError(
-          err instanceof Error ? err.message : 'Failed to fetch audio contexts',
-        );
+        // Don't set error for now, just use empty array
+        setAudioContexts([]);
+        setError(null);
       } finally {
         setIsLoading(false);
       }
