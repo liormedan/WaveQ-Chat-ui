@@ -294,7 +294,7 @@ export function ProcessingHistoryManager({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <HistoryIcon size={20} className="text-primary" />
+          <HistoryIcon size={20} />
           <h2 className="text-xl font-semibold">Processing History</h2>
           <Badge variant="secondary">{pagination.totalCount} files</Badge>
         </div>
