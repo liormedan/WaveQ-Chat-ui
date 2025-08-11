@@ -28,6 +28,7 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.env.admin.backup
 
 # turbo
 .turbo
@@ -55,3 +56,6 @@ yarn-error.log*
 
 # Supabase
 supabase/.temp/
+
+# Start scripts with secrets
+start-safe.bat

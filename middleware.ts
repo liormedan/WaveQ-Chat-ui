@@ -17,6 +17,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Check if we're in admin mode (skip authentication)
+  if (process.env.SKIP_AUTH === 'true' || process.env.ADMIN_MODE === 'true') {
+    return NextResponse.next();
+  }
+
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,
@@ -24,8 +29,12 @@ export async function middleware(request: NextRequest) {
   });
 
   if (!token) {
+    // In user mode, redirect to login page instead of guest
+    if (process.env.SKIP_AUTH === 'false' && process.env.ADMIN_MODE === 'false') {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+    
     const redirectUrl = encodeURIComponent(request.url);
-
     return NextResponse.redirect(
       new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
     );

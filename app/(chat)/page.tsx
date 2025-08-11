@@ -8,10 +8,34 @@ import { auth } from '../(auth)/auth';
 import { redirect } from 'next/navigation';
 
 export default async function Page() {
+  console.log('=== PAGE LOADING ===');
+  console.log('DISABLE_AUTH:', process.env.DISABLE_AUTH);
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  
   const session = await auth();
+  console.log('Session exists:', !!session);
+  console.log('Session user:', session?.user?.email);
+
+  // Check if this is a guest session (auto-created)
+  const isGuestSession = session?.user?.email?.startsWith('guest-');
+  console.log('Is guest session:', isGuestSession);
 
   if (!session) {
-    redirect('/api/auth/guest');
+    console.log('No session found');
+    
+    // Check if authentication is disabled (admin mode)
+    if (process.env.DISABLE_AUTH === 'true') {
+      console.log('ADMIN MODE - Continuing without session');
+      // Admin mode - continue without session
+    } else {
+      console.log('USER MODE - Redirecting to login');
+      redirect('/login');
+    }
+  } else if (isGuestSession) {
+    console.log('Guest session found - allowing access');
+    // Guest session is valid, continue normally
+  } else {
+    console.log('Real user session found, continuing normally');
   }
 
   const id = generateUUID();
