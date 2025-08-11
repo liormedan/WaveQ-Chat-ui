@@ -35,7 +35,7 @@ function PureArtifactActions({
     throw new Error('Artifact definition not found!');
   }
 
-  const actionContext: ArtifactActionContext = {
+  const actionContext: ArtifactActionContext<any> = {
     content: artifact.content,
     handleVersionChange,
     currentVersionIndex,
@@ -60,20 +60,18 @@ function PureArtifactActions({
                 setIsLoading(true);
 
                 try {
-                  await Promise.resolve(action.onClick(actionContext));
+                  if (action.onClick) {
+                    await Promise.resolve(action.onClick());
+                  } else if (action.handler) {
+                    await Promise.resolve(action.handler());
+                  }
                 } catch (error) {
                   toast.error('Failed to execute action');
                 } finally {
                   setIsLoading(false);
                 }
               }}
-              disabled={
-                isLoading || artifact.status === 'streaming'
-                  ? true
-                  : action.isDisabled
-                    ? action.isDisabled(actionContext)
-                    : false
-              }
+              disabled={isLoading || artifact.status === 'streaming'}
             >
               {action.icon}
               {action.label}

@@ -8,11 +8,21 @@ config({
 });
 
 const runMigrate = async () => {
+  // Check if we have Supabase configuration
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
+    console.log('✅ Using Supabase - migrations handled automatically');
+    console.log('   Tables will be created when needed');
+    process.exit(0);
+  }
+
   if (!process.env.POSTGRES_URL || 
       process.env.POSTGRES_URL === 'postgresql://user:password@host:port/database' ||
-      process.env.POSTGRES_URL === 'your-postgres-url-here') {
-    console.log('⚠️  POSTGRES_URL not found or invalid, skipping migrations');
-    console.log('   This is normal for development or when using SQLite');
+      process.env.POSTGRES_URL === 'your-postgres-url-here' ||
+      process.env.POSTGRES_URL.includes('[YOUR-PASSWORD]') ||
+      process.env.POSTGRES_URL.includes('[YOUR-PROJECT-REF]')) {
+    console.log('⚠️  POSTGRES_URL not configured properly');
+    console.log('   Please update your .env.local file with your Supabase connection string');
+    console.log('   Format: postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres');
     process.exit(0);
   }
 

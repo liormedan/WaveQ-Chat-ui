@@ -6,8 +6,15 @@ import * as schema from './schema-sqlite';
 const sqlite = new Database('dev.db');
 export const db = drizzle(sqlite, { schema });
 
+// Track if database has been initialized to avoid duplicate messages
+let isInitialized = false;
+
 // Initialize tables if they don't exist
 export function initializeDatabase() {
+  if (isInitialized) {
+    return; // Skip if already initialized
+  }
+
   try {
     // Create tables manually for development
     sqlite.exec(`
@@ -117,6 +124,7 @@ export function initializeDatabase() {
     `);
 
     console.log('✅ SQLite database initialized');
+    isInitialized = true;
   } catch (error) {
     console.error('❌ Failed to initialize SQLite database:', error);
   }

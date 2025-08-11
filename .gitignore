@@ -52,3 +52,6 @@ yarn-error.log*
 # Database
 *.db
 *.sqlite
+
+# Supabase
+supabase/.temp/
