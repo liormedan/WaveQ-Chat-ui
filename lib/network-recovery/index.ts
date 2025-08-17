@@ -445,7 +445,8 @@ export class NetworkRecoveryFetch {
 
   private shouldRetry(error: unknown): boolean {
     if (error instanceof ChatSDKError) {
-      return error.code === 'offline:chat' || error.code === 'rate_limit:chat';
+      return (error.type === 'offline' && error.surface === 'chat') || 
+             (error.type === 'rate_limit' && error.surface === 'chat');
     }
 
     const errorMessage = error instanceof Error ? error.message : String(error);

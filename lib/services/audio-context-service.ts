@@ -7,6 +7,7 @@ import {
   saveAudioContextMessage,
   getAudioContextMessagesByContextId,
 } from '@/lib/db/queries';
+import type { AudioContext } from '@/lib/db/schema';
 import { myProvider } from '@/lib/ai/providers';
 import { generateText } from 'ai';
 import { processingStatusService } from './processing-status-service';
@@ -44,7 +45,7 @@ export async function createAudioContext({
     // Check if audio context already exists for this file
     const existingContexts = await getAudioContextsByChatId({ chatId });
     const existingContext = existingContexts.find(
-      (context) => context.audioFileUrl === audioFile.url,
+      (context: AudioContext) => context.audioFileUrl === audioFile.url,
     );
 
     if (existingContext) {

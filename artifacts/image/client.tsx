@@ -12,4 +12,14 @@ export const imageArtifact = {
       onClick: () => console.log('Download image'),
     }
   ],
+  onStreamPart: ({ streamPart, setArtifact, setMetadata }: any) => {
+    // Handle image stream parts
+    if (streamPart.type === 'data-content') {
+      setArtifact((draft: any) => ({
+        ...draft,
+        content: (draft.content || '') + streamPart.data,
+      }));
+    }
+  },
+  toolbar: [],
 };

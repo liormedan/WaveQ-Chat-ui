@@ -12,4 +12,14 @@ export const textArtifact = {
       onClick: () => console.log('Copy text'),
     }
   ],
+  onStreamPart: ({ streamPart, setArtifact, setMetadata }: any) => {
+    // Handle text stream parts
+    if (streamPart.type === 'data-content') {
+      setArtifact((draft: any) => ({
+        ...draft,
+        content: (draft.content || '') + streamPart.data,
+      }));
+    }
+  },
+  toolbar: [],
 };

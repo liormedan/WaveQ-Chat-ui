@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   ChatSDKError,
   type ErrorCode,
@@ -143,7 +144,7 @@ export class ErrorHandler {
     const isChatSDKError = error instanceof ChatSDKError;
     const errorCode = isChatSDKError
       ? (`${error.type}:${error.surface}` as ErrorCode)
-      : 'system:api';
+      : 'bad_request:api';
     const [type, surface] = errorCode.split(':') as [ErrorType, Surface];
 
     const category = this.determineCategory(type, surface);
@@ -198,7 +199,7 @@ export class ErrorHandler {
     errorCode: ErrorCode,
     originalMessage: string,
   ): string {
-    const messageMap: Record<ErrorCode, string> = {
+    const messageMap: Partial<Record<ErrorCode, string>> = {
       'bad_request:api':
         'The request could not be processed. Please check your input and try again.',
       'bad_request:database':
@@ -218,7 +219,6 @@ export class ErrorHandler {
         'You have exceeded the rate limit. Please try again later.',
       'offline:chat':
         'Network connection issue. Please check your internet connection.',
-      'system:api': 'A system error occurred. Please try again later.',
     };
 
     return (
@@ -301,6 +301,7 @@ export class ErrorHandler {
       severity: errorInfo.severity,
       message: errorInfo.message,
       userMessage: errorInfo.userMessage,
+      suggestedActions: errorInfo.suggestedActions,
       context: errorInfo.context,
       stack: errorInfo.stack,
     };
@@ -374,8 +375,24 @@ export class ErrorHandler {
     errorsBySeverity: Record<ErrorSeverity, number>;
     recentErrors: ErrorInfo[];
   } {
-    const errorsByCategory: Record<ErrorCategory, number> = {};
-    const errorsBySeverity: Record<ErrorSeverity, number> = {};
+    const errorsByCategory: Record<ErrorCategory, number> = {
+      authentication: 0,
+      authorization: 0,
+      validation: 0,
+      database: 0,
+      network: 0,
+      file_processing: 0,
+      audio_processing: 0,
+      external_service: 0,
+      system: 0,
+      user_action: 0,
+    };
+    const errorsBySeverity: Record<ErrorSeverity, number> = {
+      low: 0,
+      medium: 0,
+      high: 0,
+      critical: 0,
+    };
 
     this.errorLog.forEach((error) => {
       errorsByCategory[error.category] =
@@ -422,7 +439,7 @@ export function handleUnknownError(
   context?: Partial<ErrorContext>,
 ): ErrorInfo {
   const errorMessage = error instanceof Error ? error.message : String(error);
-  const sdkError = new ChatSDKError('system:api', errorMessage);
+  const sdkError = new ChatSDKError('bad_request:api', errorMessage);
   return errorHandler.handleError(sdkError, context);
 }
 

@@ -59,10 +59,11 @@ export class ErrorReportingService {
   }
 
   public static getInstance(
-    config?: ErrorReportingConfig,
+    config?: Partial<ErrorReportingConfig>,
   ): ErrorReportingService {
     if (!ErrorReportingService.instance) {
-      ErrorReportingService.instance = new ErrorReportingService(config);
+      const mergedConfig = config ? { ...defaultErrorReportingConfig, ...config } : defaultErrorReportingConfig;
+      ErrorReportingService.instance = new ErrorReportingService(mergedConfig);
     }
     return ErrorReportingService.instance;
   }

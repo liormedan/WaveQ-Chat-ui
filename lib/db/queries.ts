@@ -393,39 +393,48 @@ export async function getChatsByUserIdWithAudioContext({
 
     // If audio context is requested, fetch it for each chat
     if (includeAudioContext && filteredChats.length > 0) {
-      const chatIds = filteredChats.map((chat) => chat.id);
+      try {
+        const chatIds = filteredChats.map((chat) => chat.id);
 
-      // Get audio contexts for all chats in one query
-      const audioContexts = await db
-        .select({
-          chatId: schema.audioContext.chatId,
-          audioFileName: schema.audioContext.audioFileName,
-          audioFileUrl: schema.audioContext.audioFileUrl,
-          audioFileType: schema.audioContext.audioFileType,
-          audioDuration: schema.audioContext.audioDuration,
-          contextSummary: schema.audioContext.contextSummary,
-          audioTranscription: schema.audioContext.audioTranscription,
-        })
-        .from(schema.audioContext)
-        .where(inArray(schema.audioContext.chatId, chatIds));
+        // Get audio contexts for all chats in one query
+        const audioContexts = await db
+          .select({
+            chatId: schema.audioContext.chatId,
+            audioFileName: schema.audioContext.audioFileName,
+            audioFileUrl: schema.audioContext.audioFileUrl,
+            audioFileType: schema.audioContext.audioFileType,
+            audioDuration: schema.audioContext.audioDuration,
+            contextSummary: schema.audioContext.contextSummary,
+            audioTranscription: schema.audioContext.audioTranscription,
+          })
+          .from(schema.audioContext)
+          .where(inArray(schema.audioContext.chatId, chatIds));
 
-      // Group audio contexts by chat ID
-      const audioContextsByChat = audioContexts.reduce(
-        (acc: any, context: any) => {
-          if (!acc[context.chatId]) {
-            acc[context.chatId] = [];
-          }
-          acc[context.chatId].push(context);
-          return acc;
-        },
-        {},
-      );
+        // Group audio contexts by chat ID
+        const audioContextsByChat = audioContexts.reduce(
+          (acc: any, context: any) => {
+            if (!acc[context.chatId]) {
+              acc[context.chatId] = [];
+            }
+            acc[context.chatId].push(context);
+            return acc;
+          },
+          {},
+        );
 
-      // Attach audio context information to chats
-      filteredChats = filteredChats.map((chat) => ({
-        ...chat,
-        audioContexts: audioContextsByChat[chat.id] || [],
-      }));
+        // Attach audio context information to chats
+        filteredChats = filteredChats.map((chat) => ({
+          ...chat,
+          audioContexts: audioContextsByChat[chat.id] || [],
+        }));
+      } catch (audioError) {
+        console.warn('Audio context table not found, skipping audio context data');
+        // Continue without audio context data
+        filteredChats = filteredChats.map((chat) => ({
+          ...chat,
+          audioContexts: [],
+        }));
+      }
     }
 
     const hasMore = filteredChats.length > limit;

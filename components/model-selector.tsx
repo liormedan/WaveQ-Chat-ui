@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import type { Session } from 'next-auth';
+import type { ChatModel } from '@/lib/ai/models';
 
 export function ModelSelector({
   session,

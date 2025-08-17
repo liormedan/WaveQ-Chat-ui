@@ -49,22 +49,20 @@ echo.
 echo 👤 מפעיל במצב אדמין...
 echo 🔧 מגדיר משתני סביבה לאדמין...
 
-REM Check if .env.local exists
-if not exist ".env.local" (
-    echo ❌ קובץ .env.local לא נמצא!
-    echo אנא צור קובץ .env.local עם הגדרות Supabase
+REM Kill existing servers
+taskkill /f /im node.exe >nul 2>&1
+
+REM Check if .env.admin exists
+if not exist ".env.admin" (
+    echo ❌ קובץ .env.admin לא נמצא!
+    echo אנא צור קובץ .env.admin עם הגדרות אדמין
     pause
     goto MENU
 )
 
-REM Create admin environment
-copy .env.local .env.admin.backup >nul 2>&1
-
-REM Add admin mode variables to existing .env.local
-echo. >> .env.local
-echo # Admin Mode - Skip Authentication >> .env.local
-echo SKIP_AUTH=true >> .env.local
-echo ADMIN_MODE=true >> .env.local
+REM Copy admin environment
+copy .env.admin .env.local >nul 2>&1
+echo ✅ הועתק קובץ .env.admin ל-.env.local
 
 goto START_SERVER
 
@@ -73,24 +71,20 @@ echo.
 echo 🌐 מפעיל במצב רגיל...
 echo 🔧 מגדיר משתני סביבה למשתמשים...
 
-REM Restore normal environment
-if exist .env.admin.backup (
-    copy .env.admin.backup .env.local >nul 2>&1
-    del .env.admin.backup >nul 2>&1
-) else (
-    REM Remove admin mode variables if they exist
-    if exist ".env.local" (
-        findstr /v "SKIP_AUTH ADMIN_MODE" .env.local > .env.temp
-        move .env.temp .env.local >nul 2>&1
-    )
-    
-    REM Add user mode variables
-    echo. >> .env.local
-    echo # User Mode - With Authentication >> .env.local
-    echo SKIP_AUTH=false >> .env.local
-    echo ADMIN_MODE=false >> .env.local
-    echo ALLOW_GUEST=true >> .env.local
+REM Kill existing servers
+taskkill /f /im node.exe >nul 2>&1
+
+REM Check if .env.user exists
+if not exist ".env.user" (
+    echo ❌ קובץ .env.user לא נמצא!
+    echo אנא צור קובץ .env.user עם הגדרות משתמש
+    pause
+    goto MENU
 )
+
+REM Copy user environment
+copy .env.user .env.local >nul 2>&1
+echo ✅ הועתק קובץ .env.user ל-.env.local
 
 goto START_SERVER
 

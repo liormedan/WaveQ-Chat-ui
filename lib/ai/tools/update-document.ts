@@ -1,8 +1,7 @@
-import { tool, type UIMessageStreamWriter } from 'ai';
-import type { Session } from 'next-auth';
 import { z } from 'zod';
-import { getDocumentById } from '@/lib/db/queries';
-import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
+import { tool, type UIMessageStreamWriter } from 'ai';
+import { getDocumentById, saveDocument } from '@/lib/db/queries';
+import type { Session } from 'next-auth';
 import type { ChatMessage } from '@/lib/types';
 
 interface UpdateDocumentProps {
@@ -10,7 +9,7 @@ interface UpdateDocumentProps {
   dataStream: UIMessageStreamWriter<ChatMessage>;
 }
 
-export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
+export const updateDocumentTool = ({ session, dataStream }: UpdateDocumentProps) =>
   tool({
     description: 'Update a document with the given description.',
     inputSchema: z.object({
@@ -34,29 +33,21 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         transient: true,
       });
 
-      const documentHandler = documentHandlersByArtifactKind.find(
-        (documentHandlerByArtifactKind) =>
-          documentHandlerByArtifactKind.kind === document.kind,
-      );
-
-      if (!documentHandler) {
-        throw new Error(`No document handler found for kind: ${document.kind}`);
-      }
-
-      await documentHandler.onUpdateDocument({
-        document,
-        description,
-        dataStream,
-        session,
+      // TODO: Implement proper document update logic
+      // For now, just save the document with updated content
+      await saveDocument({
+        id,
+        content: description,
+        title: document.title,
+        kind: document.kind,
+        userId: session.user.id,
       });
-
-      dataStream.write({ type: 'data-finish', data: null, transient: true });
 
       return {
         id,
         title: document.title,
         kind: document.kind,
-        content: 'The document has been updated successfully.',
+        content: 'Document update requested. This feature is not yet fully implemented.',
       };
     },
   });

@@ -8,6 +8,7 @@ import {
   getGeneratedAudioMessagesByAudioId,
 } from '@/lib/db/queries';
 import { processingStatusService } from './processing-status-service';
+import type { GeneratedAudio } from '@/lib/db/schema';
 
 export interface GeneratedAudioRequest {
   chatId: string;
@@ -71,7 +72,7 @@ export async function createGeneratedAudioRequest(
   try {
     // Create processing status
     const statusId = processingStatusService.createStatus({
-      type: 'audio-generation',
+      type: 'audio-processing',
       steps: [
         {
           id: generateUUID(),
@@ -368,7 +369,7 @@ export async function getGeneratedAudiosForChat(
   try {
     const generatedAudios = await getGeneratedAudiosByChatId({ chatId });
 
-    return generatedAudios.map((audio) => ({
+    return generatedAudios.map((audio: GeneratedAudio) => ({
       id: audio.id,
       originalAudioId: audio.originalAudioId,
       originalAudioName: audio.originalAudioName,

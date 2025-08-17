@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { getWeather } from './ai/tools/get-weather';
 import type { createDocument } from './ai/tools/create-document';
-import type { updateDocument } from './ai/tools/update-document';
+import type { updateDocumentTool } from './ai/tools/update-document';
 import type { requestSuggestions } from './ai/tools/request-suggestions';
 import type { InferUITool, UIMessage } from 'ai';
 
@@ -18,7 +18,7 @@ export type MessageMetadata = z.infer<typeof messageMetadataSchema>;
 
 type weatherTool = InferUITool<typeof getWeather>;
 type createDocumentTool = InferUITool<ReturnType<typeof createDocument>>;
-type updateDocumentTool = InferUITool<ReturnType<typeof updateDocument>>;
+type updateDocumentToolType = InferUITool<ReturnType<typeof updateDocumentTool>>;
 type requestSuggestionsTool = InferUITool<
   ReturnType<typeof requestSuggestions>
 >;
@@ -26,7 +26,7 @@ type requestSuggestionsTool = InferUITool<
 export type ChatTools = {
   getWeather: weatherTool;
   createDocument: createDocumentTool;
-  updateDocument: updateDocumentTool;
+  updateDocument: updateDocumentToolType;
   requestSuggestions: requestSuggestionsTool;
 };
 

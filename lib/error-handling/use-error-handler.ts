@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { errorHandler, type ErrorInfo, type ErrorContext } from './index';
+import { errorHandler, handleUnknownError, type ErrorInfo, type ErrorContext } from './index';
 
 // Error state interface
 export interface ErrorState {
@@ -15,6 +15,10 @@ export interface UseErrorHandlerReturn {
   clearError: () => void;
   dismissError: () => void;
   retry: () => void;
+  withErrorHandling: <T>(
+    operation: () => Promise<T>,
+    context?: Partial<ErrorContext>,
+  ) => Promise<T>;
 }
 
 // Configuration for the error handler hook
@@ -57,7 +61,7 @@ export function useErrorHandler(
   // Handle error with context
   const handleError = useCallback(
     (error: unknown, context?: Partial<ErrorContext>) => {
-      const errorInfo = errorHandler.handleError(error, context);
+      const errorInfo = handleUnknownError(error, context);
 
       setErrorState({
         hasError: true,

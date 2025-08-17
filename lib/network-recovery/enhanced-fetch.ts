@@ -8,7 +8,7 @@ export interface EnhancedFetchOptions extends RequestInit {
   retryCount?: number;
   retryDelay?: number;
   timeout?: number;
-  priority?: 'high' | 'normal' | 'low';
+  priority?: 'high' | 'auto' | 'low';
   context?: Partial<ErrorContext>;
   onRetry?: (attempt: number, error: Error) => void;
   onSuccess?: (response: Response) => void;
@@ -31,7 +31,7 @@ export async function fetchWithNetworkRecovery(
     retryCount = 3,
     retryDelay = 1000,
     timeout,
-    priority = 'normal',
+    priority = 'auto',
     context,
     onRetry,
     onSuccess,
@@ -91,7 +91,8 @@ export async function fetchWithNetworkRecovery(
     // Handle network errors
     if (
       lastError instanceof ChatSDKError &&
-      lastError.code === 'offline:chat'
+      lastError.type === 'offline' &&
+      lastError.surface === 'chat'
     ) {
       onError?.(lastError);
       throw lastError;
@@ -134,8 +135,8 @@ export async function fetchWithNetworkRecovery(
           // Don't retry on certain errors
           if (retryError instanceof ChatSDKError) {
             if (
-              retryError.code === 'offline:chat' ||
-              retryError.code === 'unauthorized:auth'
+              (retryError.type === 'offline' && retryError.surface === 'chat') ||
+              (retryError.type === 'unauthorized' && retryError.surface === 'auth')
             ) {
               onError?.(retryError);
               throw retryError;

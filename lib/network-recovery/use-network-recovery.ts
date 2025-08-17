@@ -177,7 +177,7 @@ export function useGracefulDegradation<T>(
   offlineValue: T,
   degradedValue?: T,
 ): T {
-  const { networkStatus } = useNetworkStatus();
+  const { status: networkStatus } = useNetworkStatus();
 
   if (networkStatus === 'offline') {
     return offlineValue;

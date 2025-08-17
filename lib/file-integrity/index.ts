@@ -47,7 +47,7 @@ export interface FileRecoveryResult {
 // Supported file types and their validation rules
 export const FILE_VALIDATION_RULES = {
   audio: {
-    extensions: ['.mp3', '.wav', '.flac', '.m4a', '.ogg', '.aac', '.webm'],
+    extensions: ['.mp3', '.wav', '.flac', '.m4a', '.ogg', '.aac', '.webm'] as string[],
     mimeTypes: [
       'audio/mpeg',
       'audio/mp3',
@@ -57,28 +57,28 @@ export const FILE_VALIDATION_RULES = {
       'audio/ogg',
       'audio/aac',
       'audio/webm',
-    ],
+    ] as string[],
     maxSize: 50 * 1024 * 1024, // 50MB
     minSize: 1024, // 1KB
   },
   image: {
-    extensions: ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
-    mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+    extensions: ['.jpg', '.jpeg', '.png', '.gif', '.webp'] as string[],
+    mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as string[],
     maxSize: 10 * 1024 * 1024, // 10MB
     minSize: 1024, // 1KB
   },
   document: {
-    extensions: ['.pdf', '.txt', '.doc', '.docx'],
+    extensions: ['.pdf', '.txt', '.doc', '.docx'] as string[],
     mimeTypes: [
       'application/pdf',
       'text/plain',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    ],
+    ] as string[],
     maxSize: 20 * 1024 * 1024, // 20MB
     minSize: 1024, // 1KB
   },
-} as const;
+};
 
 // File Integrity Checker Class
 export class FileIntegrityChecker {
@@ -211,7 +211,7 @@ export class FileIntegrityChecker {
       return { isValid: false, errors };
     }
 
-    const rules = FILE_VALIDATION_RULES[fileType];
+    const rules = FILE_VALIDATION_RULES[fileType!];
 
     // Check file extension
     if (!rules.extensions.includes(extension.toLowerCase())) {
