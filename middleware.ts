@@ -18,7 +18,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check if we're in admin mode (skip authentication)
-  if (process.env.SKIP_AUTH === 'true' || process.env.ADMIN_MODE === 'true') {
+  // Handle both explicit environment variables and production environment
+  const isAdminMode = process.env.SKIP_AUTH === 'true' || 
+                     process.env.ADMIN_MODE === 'true' || 
+                     process.env.NODE_ENV === 'production';
+  
+  if (isAdminMode) {
     return NextResponse.next();
   }
 
@@ -30,7 +35,12 @@ export async function middleware(request: NextRequest) {
 
   if (!token) {
     // In user mode, redirect to login page instead of guest
-    if (process.env.SKIP_AUTH === 'false' && process.env.ADMIN_MODE === 'false') {
+    // Only enforce strict authentication if explicitly set to false
+    const isStrictUserMode = process.env.SKIP_AUTH === 'false' && 
+                             process.env.ADMIN_MODE === 'false' && 
+                             process.env.NODE_ENV !== 'production';
+    
+    if (isStrictUserMode) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
     
