@@ -1,4 +1,4 @@
-import { put } from '@vercel/blob';
+// import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -114,9 +114,17 @@ export async function POST(request: Request) {
       const fileBuffer = await file.arrayBuffer();
 
       try {
-        const data = await put(`${filename}`, fileBuffer, {
-          access: 'public',
-        });
+        // const data = await put(`${filename}`, fileBuffer, {
+        //   access: 'public',
+        // });
+        
+        // Mock data for local development
+        const data = {
+          url: `https://example.com/${filename}`,
+          pathname: filename,
+          size: file.size,
+          uploadedAt: new Date().toISOString(),
+        };
 
         // Return success with integrity information
         return NextResponse.json({

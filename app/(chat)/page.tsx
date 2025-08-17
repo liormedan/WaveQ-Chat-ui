@@ -8,6 +8,9 @@ import { auth } from '../(auth)/auth';
 import { redirect } from 'next/navigation';
 import type { Session } from 'next-auth';
 
+// Force dynamic rendering to avoid prerendering issues
+export const dynamic = 'force-dynamic';
+
 export default async function Page() {
   console.log('=== PAGE LOADING ===');
   console.log('DISABLE_AUTH:', process.env.DISABLE_AUTH);

@@ -1,18 +1,36 @@
-import { generateDummyPassword } from './db/utils';
+// import { generateDummyPassword } from './db/utils';
 
-export const isProductionEnvironment = process.env.NODE_ENV === 'production';
-export const isDevelopmentEnvironment = process.env.NODE_ENV === 'development';
+// Environment check functions that work in Edge Runtime
+function getNodeEnv(): string {
+  try {
+    return process.env.NODE_ENV || 'development';
+  } catch {
+    return 'development';
+  }
+}
+
+function getEnvVar(key: string): string | undefined {
+  try {
+    return process.env[key];
+  } catch {
+    return undefined;
+  }
+}
+
+export const isProductionEnvironment = getNodeEnv() === 'production';
+export const isDevelopmentEnvironment = getNodeEnv() === 'development';
 export const isTestEnvironment = Boolean(
-  process.env.PLAYWRIGHT_TEST_BASE_URL ||
-    process.env.PLAYWRIGHT ||
-    process.env.CI_PLAYWRIGHT,
+  getEnvVar('PLAYWRIGHT_TEST_BASE_URL') ||
+    getEnvVar('PLAYWRIGHT') ||
+    getEnvVar('CI_PLAYWRIGHT'),
 );
 
 // Admin and authentication modes
-export const isAdminMode = process.env.ADMIN_MODE === 'true';
-export const skipAuth = process.env.SKIP_AUTH === 'true';
-export const allowGuest = process.env.ALLOW_GUEST === 'true';
+export const isAdminMode = getEnvVar('ADMIN_MODE') === 'true';
+export const skipAuth = getEnvVar('SKIP_AUTH') === 'true';
+export const allowGuest = getEnvVar('ALLOW_GUEST') === 'true';
 
 export const guestRegex = /^guest-\d+$/;
 
-export const DUMMY_PASSWORD = generateDummyPassword();
+// Use a fixed dummy password for consistency
+export const DUMMY_PASSWORD = 'dummy-salt:dummy-hash';

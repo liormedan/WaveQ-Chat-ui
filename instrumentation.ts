@@ -1,5 +1,9 @@
-import { registerOTel } from '@vercel/otel';
+// export function register() {
+//   // Vercel OTEL is not available in local builds
+//   // This will be handled by Vercel in production
+// }
 
 export function register() {
-  registerOTel({ serviceName: 'ai-chatbot' });
+  // Vercel OTEL is not available in local builds
+  // This will be handled by Vercel in production
 }

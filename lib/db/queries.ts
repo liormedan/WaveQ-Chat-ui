@@ -70,6 +70,15 @@ import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
 
+// Environment check function that works in Edge Runtime
+function getEnvVar(key: string): string | undefined {
+  try {
+    return process.env[key];
+  } catch {
+    return undefined;
+  }
+}
+
 // Database connection with fallback for development
 let client: any;
 let db: any;
@@ -77,11 +86,16 @@ let isUsingSQLite = false;
 
 try {
   if (
-    process.env.POSTGRES_URL &&
-    process.env.POSTGRES_URL !== 'your-postgres-url-here' &&
-    process.env.POSTGRES_URL !== 'postgresql://user:password@host:port/database'
+    getEnvVar('POSTGRES_URL') &&
+    getEnvVar('POSTGRES_URL') !== 'your-postgres-url-here' &&
+    getEnvVar('POSTGRES_URL') !== 'postgresql://user:password@host:port/database'
   ) {
-    client = postgres(process.env.POSTGRES_URL);
+    const postgresUrl = getEnvVar('POSTGRES_URL');
+    if (postgresUrl) {
+      client = postgres(postgresUrl);
+    } else {
+      throw new Error('POSTGRES_URL is required');
+    }
     db = drizzle(client);
     isUsingSQLite = false;
   } else {
@@ -172,7 +186,7 @@ export async function createGuestUser() {
   const password = generateHashedPassword(generateUUID());
 
   try {
-    return await db
+    const [user] = await db
       .insert(schema.user)
       .values({
         id: generateUUID(),
@@ -183,6 +197,9 @@ export async function createGuestUser() {
         id: schema.user.id,
         email: schema.user.email,
       });
+    
+    // Add type for guest user
+    return [{ ...user, type: 'guest' }];
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',

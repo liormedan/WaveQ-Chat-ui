@@ -2,6 +2,15 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { guestRegex, isDevelopmentEnvironment } from './lib/constants';
 
+// Environment check functions that work in Edge Runtime
+function getEnvVar(key: string): string | undefined {
+  try {
+    return process.env[key];
+  } catch {
+    return undefined;
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -19,9 +28,9 @@ export async function middleware(request: NextRequest) {
 
   // Check if we're in admin mode (skip authentication)
   // Handle both explicit environment variables and production environment
-  const isAdminMode = process.env.SKIP_AUTH === 'true' || 
-                     process.env.ADMIN_MODE === 'true' || 
-                     process.env.NODE_ENV === 'production';
+  const isAdminMode = getEnvVar('SKIP_AUTH') === 'true' || 
+                     getEnvVar('ADMIN_MODE') === 'true' || 
+                     getEnvVar('NODE_ENV') === 'production';
   
   if (isAdminMode) {
     return NextResponse.next();
@@ -29,16 +38,16 @@ export async function middleware(request: NextRequest) {
 
   const token = await getToken({
     req: request,
-    secret: process.env.AUTH_SECRET,
+    secret: getEnvVar('AUTH_SECRET'),
     secureCookie: !isDevelopmentEnvironment,
   });
 
   if (!token) {
     // In user mode, redirect to login page instead of guest
     // Only enforce strict authentication if explicitly set to false
-    const isStrictUserMode = process.env.SKIP_AUTH === 'false' && 
-                             process.env.ADMIN_MODE === 'false' && 
-                             process.env.NODE_ENV !== 'production';
+    const isStrictUserMode = getEnvVar('SKIP_AUTH') === 'false' && 
+                             getEnvVar('ADMIN_MODE') === 'false' && 
+                             getEnvVar('NODE_ENV') !== 'production';
     
     if (isStrictUserMode) {
       return NextResponse.redirect(new URL('/login', request.url));
