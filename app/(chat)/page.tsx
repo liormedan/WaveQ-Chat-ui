@@ -25,9 +25,12 @@ export default async function Page() {
     console.log('No session found');
     
     // Check if authentication is disabled (admin mode)
-    if (process.env.DISABLE_AUTH === 'true') {
-      console.log('ADMIN MODE - Continuing without session');
-      // Admin mode - continue without session
+    // Handle both 'true' string and undefined cases for production
+    const isAdminMode = process.env.DISABLE_AUTH === 'true' || process.env.NODE_ENV === 'production';
+    
+    if (isAdminMode) {
+      console.log('ADMIN/PRODUCTION MODE - Continuing without session');
+      // Admin mode or production mode - continue without session
       // Create a minimal session object for admin mode
       const adminSession: Session = {
         user: {
@@ -79,7 +82,40 @@ export default async function Page() {
       );
     } else {
       console.log('USER MODE - Redirecting to login');
-      redirect('/login');
+      try {
+        redirect('/login');
+      } catch (error) {
+        console.error('Failed to redirect to login:', error);
+        // Fallback: show a simple page with login link
+        return (
+          <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="max-w-md w-full space-y-8">
+              <div>
+                <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                  Welcome to WaveQ Chat
+                </h2>
+                <p className="mt-2 text-center text-sm text-gray-600">
+                  Please log in to continue
+                </p>
+              </div>
+              <div className="mt-8 space-y-6">
+                <a
+                  href="/login"
+                  className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Go to Login
+                </a>
+                <a
+                  href="/register"
+                  className="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Create Account
+                </a>
+              </div>
+            </div>
+          </div>
+        );
+      }
     }
   } else if (isGuestSession) {
     console.log('Guest session found - allowing access');
